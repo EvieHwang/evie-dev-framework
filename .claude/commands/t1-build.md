@@ -1,10 +1,24 @@
-Before proposing a fix:
-- Read CLAUDE.md and constitution.md
-- Read any spec files touching the affected module
-- Identify what this change could break
+Tier 1 — small bounded change. Use for bugs, tweaks, polish, or small features where the intent is clear and the work fits in a single session. No feature artifacts are produced — the PR is the documentation.
 
-Plan the minimal surgical fix. 
-Show the plan before implementing.
-On completion, run existing tests.
+Before proposing the change:
+- Read constitution.md and CLAUDE.md.
+- If this work is refining output from an earlier T2 or T3 feature, read that feature's existing artifacts in features/[name]/.
+- Identify the minimal change that achieves the intent.
 
-Open a PR: what was broken, what changed, what was verified.
+Present the plan. Include: what's changing, why, and what the change could break or affect. Wait for approval before implementing.
+
+Implement only the minimal change. Do not refactor adjacent code, rename, or expand scope — even if you see opportunities.
+
+After implementing:
+- Run existing tests.
+- If a test fails: attempt one remediation. If it still fails, stop and report rather than proceeding.
+
+Commit using conventional commit format (one commit per logical unit).
+
+Open a PR. The PR body is the record of this change:
+- **Intent** — what you set out to do and why.
+- **Change** — what was actually modified.
+- **Verification** — tests run and any manual checks.
+- **Risk** — what this could affect; anything to watch in subsequent work.
+
+Exit condition: existing tests pass and the PR is open.
