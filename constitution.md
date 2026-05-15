@@ -20,16 +20,31 @@ explicitly requires otherwise. Deviation must be surfaced as
 a decision, not made silently.
 
 ## Architectural principles
-[rules that govern how components relate — populated as decided]
+- Feature files are the spec. They are never modified during implementation; if they are wrong, fix the document and restart the affected step.
+- No Docker for local development unless the project has multi-service dependencies that genuinely require it.
+- All deployments run through GitHub Actions, triggered by push to `main`.
+- Prefer self-hosted runners (Eviebot) over SSH-based deploy steps.
+
+[Add app-specific principles below as they are decided.]
 
 ## Patterns in use
-[established conventions — file structure, naming, error handling]
+- **Commits:** conventional commits, one per logical unit of work.
+- **Frontend stack:** React + TypeScript + Tailwind + shadcn/ui. Vanilla JS is acceptable only for stateless single-page tools.
+- **UI aesthetic:** information-dense, 14px base, tight line heights, dark mode as a first-class surface.
+- **UX checklist:** apply Nielsen's 10 heuristics as a general sanity-check on any interface; Apple HIG (see Standards) is the authoritative reference for platform decisions.
+- **Python service layout:** `pyproject.toml` with a console-script entry point (not `requirements.txt`); deployment plists live in `deploy/` (not `launchd/`).
+
+[Add app-specific patterns below as they are established.]
 
 ## Quality gates
-[what must be true before any PR — unconditional]
+- All tests pass.
+- `README.md` and `CLAUDE.md` exist and are current.
+- `.env.example` lists every key the deploy workflow injects — no drift between the committed example and the actual required secrets.
+
+[Add app-specific gates below as they are established.]
 
 ## Out of scope
-[what this codebase explicitly does not do]
+[List what this codebase explicitly does not do. Populated per app.]
 
 ## Decision log
 | Date | Decision | Rationale |
