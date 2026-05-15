@@ -1,3 +1,7 @@
+---
+description: Tier 1 — small bounded change (bug, tweak, polish, small feature). PR is the documentation.
+---
+
 Tier 1 — small bounded change. Use for bugs, tweaks, polish, or small features where the intent is clear and the work fits in a single session. No feature artifacts are produced — the PR is the documentation.
 
 Before proposing the change:
