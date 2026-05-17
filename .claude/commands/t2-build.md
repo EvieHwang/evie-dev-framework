@@ -14,7 +14,7 @@ Build until every test passes. Do not consider the feature complete until then.
 
 On test failure: attempt one remediation. If it fails again, stop and report with full context. Do not proceed.
 
-A second failure after remediation usually signals a spec/implementation conflict, not a coding mistake. Continued retries thrash toward green by tweaking surface symptoms; escalation to the user surfaces the deeper issue earlier.
+A second failure after remediation usually signals a conflict between spec and implementation, not a coding mistake. Continued retries thrash toward green by tweaking surface symptoms; escalation to the user surfaces the deeper issue earlier.
 
 Commit using conventional commit format, one commit per logical unit of work, on the current branch (the sandbox provisions this; do not create a new one).
 
