@@ -19,11 +19,43 @@ Development runs in Claude Code cloud sandboxes attached to this GitHub repo.
 - Development branch pattern: `claude/<short-task-name>-<suffix>`. Open a PR to `main` when work is complete.
 
 ## Run, test, deps
-[Fill in when this template is copied:]
-- Install: `…`
-- Run locally: `…`
-- Tests: `…`
-- Package manager / lockfile: `…`
+Pick the block that matches your project's stack. Uncomment it and delete the others. The header on each block describes when to use it.
+
+<!--
+### Python service (a backend program or MCP server, typically deployed to Eviebot)
+- Install: `python3.11 -m venv .venv && .venv/bin/pip install -e .`
+  Creates an isolated Python environment in `.venv/` (a hidden folder) and installs this project into it. The `-e` flag means "editable" — code changes take effect without reinstalling.
+- Run locally: `.venv/bin/<script-name>` where `<script-name>` is defined in `pyproject.toml` under `[project.scripts]`.
+- Tests: `.venv/bin/pytest` — pytest is the standard Python testing framework.
+- Package manager / lockfile: `pyproject.toml` describes dependencies. To add one, edit `pyproject.toml` and re-run the install command.
+-->
+
+<!--
+### Web frontend (React + Vite + Tailwind + shadcn/ui — the constitution's default frontend stack)
+- Install: `pnpm install`
+  pnpm is a JavaScript package manager (an alternative to npm). Installs everything listed in `package.json`.
+- Run locally: `pnpm dev` — starts the Vite dev server. Open http://localhost:5173 in a browser.
+- Tests: `pnpm test` — runs Vitest (the test runner that pairs with Vite).
+- Package manager / lockfile: `pnpm` with `pnpm-lock.yaml`. To add a dependency: `pnpm add <package-name>`.
+-->
+
+<!--
+### Next.js web app (React with built-in routing and server-side rendering)
+- Install: `pnpm install`
+- Run locally: `pnpm dev` — opens http://localhost:3000.
+- Tests: `pnpm test`
+- Package manager / lockfile: `pnpm` with `pnpm-lock.yaml`. To add a dependency: `pnpm add <package-name>`.
+-->
+
+<!--
+### iOS or macOS app (Xcode + Swift)
+- Install: open `<ProjectName>.xcodeproj` in Xcode. Swift Package Manager (SwiftPM) resolves dependencies automatically on open. No separate install command.
+- Run locally: in Xcode, press Run (⌘R) to launch in the chosen simulator or device.
+- Tests: in Xcode, press Test (⌘U). Or from the command line:
+  `xcodebuild test -scheme <SchemeName> -destination 'platform=iOS Simulator,name=iPhone 15'`
+- Package manager / lockfile: Swift Package Manager (`Package.resolved` — committed automatically by Xcode).
+-->
+
 
 ## Deployment target
 Pick one. Uncomment the matching block and delete the others.
