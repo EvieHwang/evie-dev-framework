@@ -2,7 +2,7 @@
 description: Derives executable tests in features/[feature-name]-[number]/tests/ plus a human-readable coverage summary at verify.md.
 ---
 
-Read features/[feature-name]-[number]/intent.md first, then features/[feature-name]-[number]/plan.md. Also read constitution.md for any project-wide test conventions.
+Read constitution.md and declaration.md, then features/[feature-name]-[number]/intent.md, then features/[feature-name]-[number]/plan.md.
 
 Check the `## Testing` section in constitution.md.
 - If it names a framework, use it.
@@ -20,6 +20,6 @@ Outputs:
 
 Present the verify summary to the user for review. Revise until coverage is sound.
 
-Commit verify.md, the test files, and (if updated) constitution.md to the working branch.
+Commit verify.md, the test files, and (if updated) constitution.md to the current branch (the sandbox provisions this; do not create a new one).
 
-Exit condition: both verify.md and the test files exist, every behavioral and structural requirement has either a test or a documented gap, the user has confirmed coverage via the summary, the `## Testing` section in constitution.md is populated, and all files are committed.
+Exit condition: both verify.md and the test files exist, every behavioral and structural requirement has a test, the user has confirmed coverage via the summary, the `## Testing` section in constitution.md is populated, and all files are committed.

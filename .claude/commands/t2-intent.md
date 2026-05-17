@@ -21,6 +21,6 @@ Write features/[feature-name]-[number]/intent.md with:
 
 Present the written document back to the user for review. Revise until it says what they meant.
 
-Commit the completed intent.md to the working branch.
+Commit the completed intent.md to the current branch (the sandbox provisions this; do not create a new one).
 
 Exit condition: features/[feature-name]-[number]/intent.md exists, the user has confirmed it captures their intent, and it is committed.
