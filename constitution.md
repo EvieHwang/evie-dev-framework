@@ -43,6 +43,10 @@ a decision, not made silently.
 
 [Add app-specific gates below as they are established.]
 
+## Testing
+Framework: [populated by t2-verify on first use]
+Run: `[command — populated by t2-verify on first use]`
+
 ## Out of scope
 [List what this codebase explicitly does not do. Populated per app.]
 
