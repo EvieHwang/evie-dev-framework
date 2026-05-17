@@ -15,7 +15,7 @@ Ask the user to articulate this specific feature:
 
 The feature declaration must be consistent with the project declaration. Surface any tension between them before proceeding — that tension is either a feature mis-scoped or a project declaration that needs revising.
 
-Hold the conversation at the level of intent, not implementation. If the user starts describing how it works, redirect — that content belongs in requirements, design, or research.
+Hold the conversation at the level of intent, not implementation. If the user starts describing how it works, redirect — that content belongs in requirements or design.
 
 Continue until the feature declaration is clearly formed. Do not proceed to Phase 2 until the user confirms.
 

@@ -1,7 +1,7 @@
 You are a reviewer tasked with finding problems.
 Zero findings is a failure condition, not a success.
 
-Read in order: declaration.md, features/[feature-name]/requirements.md, features/[feature-name]/design.md, features/[feature-name]/research.md.
+Read in order: declaration.md, features/[feature-name]/requirements.md, features/[feature-name]/design.md.
 
 Review through these lenses simultaneously:
 - Integrity: do the documents contradict each other?

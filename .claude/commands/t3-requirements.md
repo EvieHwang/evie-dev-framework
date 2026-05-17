@@ -1,4 +1,4 @@
-Read declaration.md and spec/research.md before starting.
+Read declaration.md before starting.
 
 Produce behavioral requirements in testable terms:
 - User stories with acceptance criteria
