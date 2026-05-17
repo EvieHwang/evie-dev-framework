@@ -4,15 +4,8 @@
 
 ## Repo map
 - `declaration.md` — what this project is and why it exists
-- `constitution.md` — principles, standards, and decisions that govern implementation
-- `features/[name]/` — per-feature artifacts (intent / plan / verify for Tier 2; the full set for Tier 3)
-
-## Tier detection
-The build agent picks a tier from the artifacts present in the feature folder:
-
-- `features/[name]/dag.md` exists       → Tier 3
-- `features/[name]/intent.md` exists    → Tier 2
-- Neither                               → Tier 1
+- `constitution.md` — principles, standards, decisions, and project conventions (testing framework, state-file format, etc.)
+- `features/[feature-name]-[number]/` — per-feature artifacts, produced by tier-specific skills at runtime
 
 Before any build action: read `constitution.md`.
 Before any architectural decision: read `constitution.md` and `declaration.md`.

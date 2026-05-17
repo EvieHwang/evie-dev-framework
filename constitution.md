@@ -64,4 +64,5 @@ Format:
 |----|-------------|------|--------|-------|
 
 Valid status values: pending, in-progress, complete, failed
+Notes column captures the commit SHA on completion and the failure reason on failure.
 Updated by: t3-generate-dag (initializes), t3-next-step (updates)
