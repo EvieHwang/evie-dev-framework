@@ -24,7 +24,7 @@ This works equally for a fresh build and for resuming a partial DAG from a prior
 The implementation is the DAG, not your judgment. Do not modify requirements, design, dag, or tests during build. If something looks wrong, stop and surface it — the resolution is to update upstream artifacts (back into the loop) and regenerate the DAG, not to edit in place.
 
 Final verification:
-- Run the full test suite using the command in constitution.md's `## Testing` section.
+- Run the full test suite using the command in constitution.md's `## Testing` section. Per-wave runs in t3-next-step only execute tests tagged to that wave's tasks; the final full-suite run catches end-to-end and cross-cutting tests that aren't tied to any single task.
 - All tests must pass. If any fail, set the responsible task back to `failed`, commit state.md, stop, and report.
 
 Open a PR against `main` with these sections:

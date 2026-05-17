@@ -2,7 +2,7 @@
 description: Produces features/[feature-name]-[number]/design.md. Re-run as part of the requirements ↔ architecture loop until convergence.
 ---
 
-Read constitution.md, declaration.md, features/[feature-name]-[number]/declaration.md, and features/[feature-name]-[number]/requirements.md. If features/[feature-name]-[number]/design.md exists, read it too. If features/[feature-name]-[number]/adversarial-review.md exists, read it too — every finding marked `open` must be addressed in this pass.
+Read constitution.md, declaration.md, features/[feature-name]-[number]/declaration.md, and features/[feature-name]-[number]/requirements.md. If features/[feature-name]-[number]/design.md exists, read it too. If features/[feature-name]-[number]/adversarial-review.md exists, read it too — open findings whose recommended action is t3-architecture must be addressed in this pass.
 
 Produce the architecture given the current requirements:
 - Components, contracts, and hard technical constraints.
@@ -21,7 +21,7 @@ If adversarial-review.md exists, address every `open` finding the recommended ac
 
 Write features/[feature-name]-[number]/design.md.
 
-Present the written design to the user for review.
+Present the written design to the user for review. Revise until it is sound.
 
 Commit the completed design.md to the current branch (the sandbox provisions this; do not create a new one).
 

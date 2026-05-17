@@ -19,7 +19,7 @@ If adversarial-review.md exists, address every `open` finding the recommended ac
 
 Write features/[feature-name]-[number]/requirements.md.
 
-Present the written requirements to the user for review.
+Present the written requirements to the user for review. Revise until they are sound.
 
 Commit the completed requirements.md to the current branch (the sandbox provisions this; do not create a new one).
 

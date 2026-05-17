@@ -14,6 +14,8 @@ Derive two categories of tests:
 
 Tag each test with the DAG task IDs whose acceptance conditions it verifies. A test may cover multiple tasks; a task may be covered by multiple tests. Every task in dag.md must have at least one test covering it.
 
+If verify.md and tests/ already exist, regenerate from the current requirements / design / dag — prior tests are not preserved, they were tied to the prior version of the spec. The user should re-run this skill after any change to requirements, design, or dag.
+
 If a requirement cannot be tested as written, surface the gap explicitly and stop. A weak test is worse than no test because it creates false confidence. Resolve the gap by updating requirements.md or design.md (re-entering the loop) before continuing.
 
 Outputs:
