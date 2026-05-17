@@ -2,7 +2,7 @@
 description: Produces features/[feature-name]-[number]/requirements.md in testable terms. Re-run as part of the requirements ↔ architecture loop until convergence.
 ---
 
-Read constitution.md, declaration.md, and features/[feature-name]-[number]/declaration.md. If features/[feature-name]-[number]/design.md exists, read it too — incorporate the architectural constraints it surfaces.
+Read constitution.md, declaration.md, and features/[feature-name]-[number]/declaration.md. If features/[feature-name]-[number]/design.md exists, read it too — incorporate the architectural constraints it surfaces. If features/[feature-name]-[number]/adversarial-review.md exists, read it too — every finding marked `open` whose recommended action is t3-requirements must be addressed in this pass.
 
 Produce behavioral requirements in testable terms:
 - **User stories with acceptance criteria** — each story names a user, a need, and the criteria that confirm it works.
@@ -14,6 +14,8 @@ If design.md exists and surfaces architectural constraints, revise requirements 
 If design.md exists and you find no requirements changes are needed, state that explicitly at the end of requirements.md ("Requirements stable — no architectural feedback to incorporate"). If t3-architecture also reports stable on its next run, the loop has converged.
 
 If you surface something that needs more debate than a revision can capture, stop and surface it; don't paper over it.
+
+If adversarial-review.md exists, address every `open` finding the recommended action attributes to t3-requirements (typically coverage and scope findings). In requirements.md, note which findings were addressed, e.g., `*Addresses adversarial F-003.*`. Set the status of each addressed finding to `addressed` in adversarial-review.md (the next adversarial run will verify and promote to `resolved`). Findings already marked `acknowledged` or `deferred` do not require action.
 
 Write features/[feature-name]-[number]/requirements.md.
 

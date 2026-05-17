@@ -2,7 +2,7 @@
 description: Produces features/[feature-name]-[number]/design.md. Re-run as part of the requirements ↔ architecture loop until convergence.
 ---
 
-Read constitution.md, declaration.md, features/[feature-name]-[number]/declaration.md, and features/[feature-name]-[number]/requirements.md. If features/[feature-name]-[number]/design.md exists, read it too.
+Read constitution.md, declaration.md, features/[feature-name]-[number]/declaration.md, and features/[feature-name]-[number]/requirements.md. If features/[feature-name]-[number]/design.md exists, read it too. If features/[feature-name]-[number]/adversarial-review.md exists, read it too — every finding marked `open` must be addressed in this pass.
 
 Produce the architecture given the current requirements:
 - Components, contracts, and hard technical constraints.
@@ -16,6 +16,8 @@ If the surfaced list is non-empty, the user should run t3-requirements next to i
 If the surfaced list is empty, this side of the loop is stable. State that explicitly at the end of design.md ("Architecture stable — no requirements changes flagged"). If t3-requirements also reports stable on its next run, the loop has converged.
 
 If the architecture surfaces tension with the project or feature declaration (not just requirements), stop and surface that separately. Declaration tension is more serious than requirements tension — it usually means the feature is mis-scoped.
+
+If adversarial-review.md exists, address every `open` finding the recommended action attributes to t3-architecture (typically design, security, and standards-compliance findings). In design.md, note which findings were addressed, e.g., `*Addresses adversarial F-002, F-005.*`. Set the status of each addressed finding to `addressed` in adversarial-review.md (the next adversarial run will verify and promote to `resolved`). Findings already marked `acknowledged` or `deferred` do not require action.
 
 Write features/[feature-name]-[number]/design.md.
 
