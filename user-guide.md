@@ -179,7 +179,7 @@ The standards registry, default principles, and patterns ship pre-filled. You ca
 | `/t2-verify` | constitution, declaration, intent, plan | `verify.md`, `tests/`, populates `constitution.md` `## Testing` on first use |
 | `/t2-build` | all of the above | code, commits, PR |
 | `/declaration` | declaration | `declaration.md` (project root) |
-| `/t3-feature-declaration` | declaration, constitution | `features/[name]-[#]/declaration.md` |
+| `/t3-feature-declaration` | declaration, constitution (+ existing feature declaration on re-run) | `features/[name]-[#]/declaration.md` |
 | `/t3-requirements` | constitution, declarations, design (if exists), adversarial-review (if exists) | `requirements.md` with stability marker |
 | `/t3-architecture` | constitution, declarations, requirements, design (if exists), adversarial-review (if exists) | `design.md` with stability marker |
 | `/t3-adversarial` | constitution, declarations, requirements, design, prior adversarial-review (if exists) | `adversarial-review.md` (living artifact) |
