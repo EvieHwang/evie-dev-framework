@@ -4,8 +4,9 @@ A template repository for building software with Claude Code. Three tiers of inc
 
 ## This repo is a template
 
-You clone or fork it; the clone becomes the app you're building. Skill commands in `.claude/commands/` produce specs and code into the cloned repo. Several files ship with placeholders that get filled in as you use the template:
+You clone or fork it; the clone becomes the app you're building. Skill commands in `.claude/commands/` produce specs and code into the cloned repo. Several files ship with placeholders that get filled in or replaced as you use the template:
 
+- **This `README.md`** — describes the framework; replace it with one describing your app.
 - `CLAUDE.md` — `# [Project Name]` and the operational sections (run / test / deploy).
 - `declaration.md` — what / why / for whom / out of scope.
 - `constitution.md`'s `## Testing` section — framework and run command, populated by `/t2-verify` or `/t3-test-coach` on first use.
@@ -17,9 +18,10 @@ The framework template itself has no executable code and no tests; quality gates
 
 Open the cloned repo in Claude Code (the cloud sandbox is the default development surface) and:
 
-1. Edit `CLAUDE.md` to set the project name, description, run/test commands, and deployment target.
-2. Run `/declaration` to populate `declaration.md`.
-3. Pick a tier and run its starting command (`/t1-build`, `/t2-intent`, or `/t3-feature-declaration`).
+1. Replace this `README.md` with a stub for your app (just `# AppName` and a one-line description is fine to start). Flesh it out as the app takes shape — typically after `/declaration` runs, the README can quote from `declaration.md`. Do not delete `README.md` without replacing it; `constitution.md`'s quality gate requires it to exist.
+2. Edit `CLAUDE.md` to set the project name, description, run/test commands, and deployment target.
+3. Run `/declaration` to populate `declaration.md`.
+4. Pick a tier and run its starting command (`/t1-build`, `/t2-intent`, or `/t3-feature-declaration`).
 
 See [`user-guide.md`](user-guide.md) for the full reference, including how the requirements ↔ architecture loop converges, how adversarial findings flow back through the loop, and how the DAG-driven build works across cloud-sandbox sessions.
 
