@@ -16,7 +16,7 @@ Development runs in Claude Code cloud sandboxes attached to this GitHub repo.
 - The container is ephemeral and re-cloned each session. Anything not committed and pushed is lost.
 - No `~/.claude/CLAUDE.md` exists in the sandbox — user-global preferences are carried at the bottom of this file.
 - GitHub access is via the GitHub MCP server (tools prefixed `mcp__github__`). The `gh` CLI is not available.
-- Development branch pattern: `claude/<short-task-name>-<suffix>`. Open a PR to `main` when work is complete.
+- Development branch pattern: `claude/<short-task-name>-<suffix>`. Open a PR to `main` when work is complete. Always assign the PR to the repo owner. 
 
 ## Run, test, deps
 Pick the block that matches your project's stack. Uncomment it and delete the others. The header on each block describes when to use it.
