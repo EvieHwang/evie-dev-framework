@@ -17,7 +17,7 @@ Generate a dependency graph of all build tasks. For each task:
 - **Wave** — the parallel-execution wave (1, 2, 3, …). Tasks in the same wave can run in parallel; later waves wait for earlier ones.
 - **Acceptance condition** — what makes this task done. Must be objectively checkable.
 
-Each task must be atomic and completable in a single session.
+Each task must be atomic and completable in a single session with margin. If a task aggregates multiple distinct concerns (e.g., "rendering + CSRF token store + allowlist + accessibility markup"), split it into atomic sub-tasks with explicit wave ordering. Atomicity beats apparent cohesion — a task that bundles five concerns is five chances to partially complete and leave the DAG in a confusing state. When in doubt, split.
 
 Write features/[feature-name]-[number]/dag.md with all tasks, grouped by wave.
 

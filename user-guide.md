@@ -37,7 +37,7 @@ A three-tier build framework for Claude Code, distributed as a template reposito
         ├── t2-intent.md, t2-plan.md, t2-verify.md, t2-build.md
         ├── t3-feature-declaration.md, t3-requirements.md,
         │   t3-architecture.md, t3-adversarial.md, t3-generate-dag.md,
-        │   t3-test-coach.md, t3-next-step.md, t3-build.md
+        │   t3-test-coach.md, t3-next-step.md, t3-build.md, t3-retro.md
 ```
 
 Feature folders are named `[feature-name]-[number]`. Numbers are sequential per feature name and disambiguate iterations — never overwrite a previous version, create a new numbered folder. Artifacts inside feature folders are populated by skills at runtime; never pre-create empty placeholders (several skills detect their pass number by checking which artifacts exist).
@@ -134,10 +134,13 @@ T3 has a pre-build sequence, two iterative loops, and a DAG-driven build. The pr
 
 **`t3-adversarial`** — reviews requirements + design through six lenses (integrity, coverage, security, standards compliance, failure modes, scope drift). Outputs `adversarial-review.md` as a living artifact: every finding has a stable ID (F-001, F-002…), severity (HIGH / MEDIUM / LOW), a recommended action naming which skill should address it, and a status (`open` / `addressed` / `acknowledged` / `resolved` / `deferred`). Zero findings is a valid outcome — the skill judges readiness, it does not manufacture findings to justify a pass.
 
-The skill is bounded against infinite re-running:
+The skill is bounded against infinite re-running and tuned for verification quality:
 - **Stop condition.** A re-run against unchanged requirements.md and design.md exits without re-deriving findings (it compares against the commit SHA stored in the prior review's header).
 - **Located findings only.** Security findings must name a file:line or specific spec section; LOW findings are dropped if they have no location.
 - **Pattern-reuse scoping.** When `design.md` marks a surface `Reuses pattern: X` against the constitution's pattern registry, the security and failure-modes lenses for that surface drop to HIGH-severity-only review.
+- **Attack the fix.** Verifying an `addressed` finding means re-attacking the proposed mitigation, not just confirming it exists. A fix that closes the original gap but introduces an adjacent one stays `open`.
+- **Severity inheritance.** Findings carry unmitigated severity. An acknowledged HIGH stays HIGH on the registry; acceptance is recorded in status, not by lowering severity.
+- **Constitution propagation.** Acknowledged findings are appended to `constitution.md`'s `## Acknowledged risks` table so cumulative risk across features is visible at the project level.
 
 When findings exist, the user re-enters the req↔arch loop. `t3-requirements` and `t3-architecture` each read `adversarial-review.md`, address every `open` finding routed to them, and mark those findings `addressed`. The next run of `t3-adversarial` verifies the claims and promotes verified findings to `resolved`.
 
@@ -160,6 +163,14 @@ Orchestrates the DAG. Internally invokes `/t3-next-step` in a loop until `state.
 Tasks within a wave may run in parallel via sub-agents. Tests tagged to those task IDs run after the wave; a failed test sets the responsible task back to `failed` and stops the loop.
 
 Build skills never modify requirements, design, dag, or tests. If something looks wrong during build, the skill stops and surfaces it — the resolution is to update upstream artifacts and regenerate the DAG, not edit in place.
+
+### Retro
+
+```
+/t3-retro      feature-name: [name]
+```
+
+Optional, but recommended after each T3 build. Coached conversation that produces `features/[name]-[#]/retro.md` capturing what went well, what went badly (with adversarial-finding IDs and DAG task IDs where applicable), loop iteration counts, and concrete proposed additions to `constitution.md`, `CLAUDE.md`, and skill prompts. Project-vs-template recommendations are marked separately so template-level lessons can be lifted directly into a framework-update PR. Without this, retros happen in chat and evaporate; with it, learning compounds across features.
 
 ---
 
@@ -194,3 +205,4 @@ The standards registry, default principles, and patterns ship pre-filled. You ca
 | `/t3-test-coach` | constitution, declarations, requirements, design, dag | `verify.md`, `tests/` |
 | `/t3-build` | all pre-build + state + verify | drives DAG; final tests; PR |
 | `/t3-next-step` | constitution, dag, state, verify | executes one wave; updates state |
+| `/t3-retro` | constitution, declarations, all feature artifacts, git log | `features/[name]-[#]/retro.md` |

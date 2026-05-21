@@ -10,6 +10,16 @@
 Before any build action: read `constitution.md`.
 Before any architectural decision: read `constitution.md` and `declaration.md`.
 
+## Precedent repos to consult before building
+*Other repos that encode patterns this project inherits or replaces. List them here so a fresh build agent knows what to read for ground truth before assuming a precedent.*
+
+- `<owner>/<repo>` — what pattern it provides and how this project relates. [Replace or delete per project. Delete the section entirely if there are no precedent repos.]
+
+If access to a listed repo is scoped out of the current session, ask the user before guessing — earlier specs from precedent repos are not always current and may have been superseded.
+
+## Build flow note
+Spec tests in `features/<feature>/tests/` are written **before** implementation and intentionally fail (ImportError or pytest.skip equivalent) until each tagged task is built. When picking up a task, the first action is to run the tests for that task and confirm they're failing in the expected way (right module, right reason). Only then write code. A test that passes before its task has been implemented is a signal that the test is wrong or tagged to the wrong task — fix it before continuing.
+
 ## Development environment
 Development runs in Claude Code cloud sandboxes attached to this GitHub repo.
 
@@ -69,7 +79,8 @@ Pick one. Uncomment the matching block and delete the others.
   `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/<plist>`
 - Subsequent deploys: `launchctl kickstart -k gui/$(id -u)/<label>`
 - Deploy via GitHub Actions on push to `main`, on the Eviebot self-hosted runner.
-  Workflow: rsync → create venv → pip install → write `.env` from secrets → kickstart.
+  Workflow: rsync → create venv → pip install → write `.env` from secrets → kickstart → **post-deploy health check**.
+- A deploy is "successful" only if the post-deploy health check against the live service passes — a zero exit from `launchctl kickstart` confirms the kick was sent, not that the service is reachable. The workflow must curl a health endpoint (or equivalent) and fail the job if it doesn't return 2xx within a bounded retry window.
 - Before choosing a launchctl label: `launchctl list | grep eviebot` to avoid collisions.
 -->
 
@@ -79,12 +90,14 @@ Pick one. Uncomment the matching block and delete the others.
 - Region: `us-east-1` (confirm per project)
 - Credentials: named profiles only; never hardcode keys
 - Deploy via GitHub Actions on push to `main`
+- A deploy is "successful" only if a post-deploy health check against the live service passes — CloudFormation/ECS/Lambda success codes confirm provisioning, not reachability. The workflow must hit a health endpoint (ALB target check, function invocation, etc.) and fail the job if it doesn't return healthy within a bounded retry window.
 -->
 
 <!--
 ### Apple platform (iOS / macOS via the Xcode Claude extension)
 - Specs live in this repo; build runs in Xcode locally
 - No CI deploy path; release is a manual Xcode build and submission
+- "Deploy success" for an Apple build means the archive builds, signs, and uploads cleanly. There is no live-service health check; treat App Store / TestFlight acceptance as the equivalent gate.
 -->
 
 ## Secrets

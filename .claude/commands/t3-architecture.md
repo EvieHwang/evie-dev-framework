@@ -4,6 +4,8 @@ description: Produces features/[feature-name]-[number]/design.md. Re-run as part
 
 Read constitution.md, declaration.md, features/[feature-name]-[number]/declaration.md, and features/[feature-name]-[number]/requirements.md. If features/[feature-name]-[number]/design.md exists, read it too. If features/[feature-name]-[number]/adversarial-review.md exists, read it too — open findings whose recommended action is t3-architecture must be addressed in this pass.
 
+**Ground-truth check before drafting.** Identify the sections of CLAUDE.md you intend to lean on for this design — precedent repos, deployment shape, gateway/proxy/auth patterns, the User globals block. List them back to the user and ask whether each is current. If CLAUDE.md names a precedent repo (see its `## Precedent repos to consult before building` section, if present), attempt to read it; if access is out of scope, ask the user to confirm the precedent before assuming it. A wasted architecture pass built on a stale section costs more than one short exchange up front.
+
 Produce the architecture given the current requirements:
 - Components, contracts, and hard technical constraints.
 - How components relate and where the seams are.
