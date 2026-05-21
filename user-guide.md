@@ -32,6 +32,7 @@ A three-tier build framework for Claude Code, distributed as a template reposito
 │
 └── .claude/
     └── commands/          # all skill commands
+        ├── setup.md
         ├── declaration.md
         ├── t1-build.md
         ├── t2-intent.md, t2-plan.md, t2-verify.md, t2-build.md
@@ -188,8 +189,8 @@ Optional, but recommended after each T3 build. Coached conversation that produce
 
 After cloning the template:
 
-1. Fill in `CLAUDE.md` — project name, one-line description, run/test/deps commands, deployment target (uncomment one of Eviebot / AWS / Apple-Xcode and delete the rest).
-2. Run `/declaration` to populate the project declaration.
+1. Run `/setup` — coached fill of `CLAUDE.md` (project name, one-line description, run/test/deps block, deployment target) and replacement of the template `README.md` with an app stub. Commits to the current branch but does not push or open a PR; `/declaration` continues on the same branch.
+2. Run `/declaration` to populate the project declaration (intent + Shape + Roadmap).
 3. Edit `constitution.md`'s app-specific sections (architectural principles, patterns, quality gates, out-of-scope) as the project develops; the template ships with universal defaults already populated.
 4. Pick a tier for your first piece of work and run the corresponding command.
 
@@ -201,6 +202,7 @@ The standards registry, default principles, and patterns ship pre-filled. You ca
 
 | Command | Reads | Produces |
 |---|---|---|
+| `/setup` | CLAUDE, README, user-guide | initialized `CLAUDE.md` + stub `README.md`, committed |
 | `/t1-build` | constitution, CLAUDE | PR (no feature artifacts) |
 | `/t2-intent` | constitution, declaration | `features/[name]-[#]/intent.md` |
 | `/t2-plan` | constitution, declaration, intent | `features/[name]-[#]/plan.md` |
