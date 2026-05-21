@@ -26,9 +26,13 @@ Review through these lenses:
 **LOW-severity bar.** A LOW finding is only emitted if it names a specific file:line (or specific requirement/design section). LOW findings without a location are dropped.
 
 If adversarial-review.md exists, this is a re-run:
-- For every finding marked `addressed`, verify it was actually addressed by inspecting the latest requirements.md and design.md. If it was, set status to `resolved` and move it to the Resolved section. If it wasn't, set status back to `open` and note why.
+- For every finding marked `addressed`, verify the fix exists in the latest requirements.md / design.md **and** treat the fix itself as a new finding to attack. Apply the original lens (and any others that fit) to the proposed mitigation. A fix that addresses the letter of the original finding but introduces an adjacent gap stays `open` with a follow-on note — do not promote it to `resolved`. Promotion to `resolved` requires both: the fix is present, and the fix itself withstands the lens.
 - Findings marked `acknowledged` or `deferred` stay as-is unless something has changed that invalidates the acceptance.
 - Add new findings discovered in this pass with new IDs.
+
+**Severity inheritance.** Findings carry their *unmitigated* severity, not their mitigated severity. An acknowledged HIGH stays HIGH in the registry; the acceptance is recorded in the status, not by lowering severity. This keeps the registry honest about what risk the project carries.
+
+**Acknowledged findings propagate to the constitution.** When a finding is marked `acknowledged`, append one row to the `## Acknowledged risks` table in constitution.md with: feature name, finding ID (e.g., F-002), severity, one-line risk, one-line rationale, mitigation (or "none"). If the section does not exist yet, create it per the format documented in the constitution template. This is the project-level surface for cumulative risk.
 
 Write features/[feature-name]-[number]/adversarial-review.md. Start with a one-line header recording the commit SHA of requirements.md and design.md at the time of this review (used by the stop condition on the next run). Then two sections:
 

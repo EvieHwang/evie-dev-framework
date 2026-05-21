@@ -15,6 +15,8 @@ If design.md exists and you find no requirements changes are needed, state that 
 
 If you surface something that needs more debate than a revision can capture, stop and surface it; don't paper over it.
 
+**Standards-creep check.** For each acceptance criterion: is it serving the feature's stated intent (from the feature declaration), or is it surfaced by a constitution-level standard (accessibility, security, API contracts)? Standards apply by default, but when a thin feature would absorb a heavy set of cross-cutting criteria (e.g., full WCAG sign-off for a one-page admin tool), surface the tension rather than silently absorbing the cost. The user decides whether to absorb, scope-down, or defer — the skill does not silently pad the feature.
+
 If adversarial-review.md exists, address every `open` finding the recommended action attributes to t3-requirements (typically coverage and scope findings). In requirements.md, note which findings were addressed, e.g., `*Addresses adversarial F-003.*`. Set the status of each addressed finding to `addressed` in adversarial-review.md (the next adversarial run will verify and promote to `resolved`). Findings already marked `acknowledged` or `deferred` do not require action.
 
 Write features/[feature-name]-[number]/requirements.md.

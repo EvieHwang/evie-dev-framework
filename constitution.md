@@ -55,6 +55,13 @@ Run: `[command — populated by t2-verify on first use]`
 |------|----------|-----------|
 [populated as significant decisions are made]
 
+## Acknowledged risks
+*Cross-feature accumulation surface. Each adversarial finding marked `acknowledged` gets one row here so the project never silently forgets that it knowingly took on risk. Severity is the unmitigated severity — an acknowledged HIGH stays HIGH. Populated by `/t3-adversarial` when a finding moves to `acknowledged`.*
+
+| Feature | Finding | Severity | Risk | Rationale | Mitigation |
+|---------|---------|----------|------|-----------|------------|
+[populated by the adversarial review process]
+
 ## Artifact formats
 
 ### State file
