@@ -132,7 +132,12 @@ T3 has a pre-build sequence, two iterative loops, and a DAG-driven build. The pr
 
 **The requirements ↔ architecture loop.** Each skill writes a stability marker at the bottom of its output when it has no new flags to surface (`Requirements stable — no architectural feedback to incorporate`; `Architecture stable — no requirements changes flagged`). The loop has converged when both the most recent `requirements.md` and `design.md` carry their markers. Iterate as many times as needed — twice is common, once is enough for trivial work, more is needed when committed architecture surfaces new constraints.
 
-**`t3-adversarial`** — reviews requirements + design through six lenses (integrity, coverage, security, standards compliance, failure modes, scope drift). Outputs `adversarial-review.md` as a living artifact: every finding has a stable ID (F-001, F-002…), severity (HIGH / MEDIUM / LOW), a recommended action naming which skill should address it, and a status (`open` / `addressed` / `acknowledged` / `resolved` / `deferred`).
+**`t3-adversarial`** — reviews requirements + design through six lenses (integrity, coverage, security, standards compliance, failure modes, scope drift). Outputs `adversarial-review.md` as a living artifact: every finding has a stable ID (F-001, F-002…), severity (HIGH / MEDIUM / LOW), a recommended action naming which skill should address it, and a status (`open` / `addressed` / `acknowledged` / `resolved` / `deferred`). Zero findings is a valid outcome — the skill judges readiness, it does not manufacture findings to justify a pass.
+
+The skill is bounded against infinite re-running:
+- **Stop condition.** A re-run against unchanged requirements.md and design.md exits without re-deriving findings (it compares against the commit SHA stored in the prior review's header).
+- **Located findings only.** Security findings must name a file:line or specific spec section; LOW findings are dropped if they have no location.
+- **Pattern-reuse scoping.** When `design.md` marks a surface `Reuses pattern: X` against the constitution's pattern registry, the security and failure-modes lenses for that surface drop to HIGH-severity-only review.
 
 When findings exist, the user re-enters the req↔arch loop. `t3-requirements` and `t3-architecture` each read `adversarial-review.md`, address every `open` finding routed to them, and mark those findings `addressed`. The next run of `t3-adversarial` verifies the claims and promotes verified findings to `resolved`.
 
@@ -149,6 +154,8 @@ When findings exist, the user re-enters the req↔arch loop. `t3-requirements` a
 Orchestrates the DAG. Internally invokes `/t3-next-step` in a loop until `state.md` shows every task complete, then runs the full test suite and opens a PR. The PR body has sections for Feature declaration / Requirements / Design / Adversarial review / Build summary / Risk.
 
 `/t3-next-step` is the per-wave executor — it's user-invokable to resume a partial DAG after a session ended, or for manual single-wave execution. One wave per invocation matches the cloud-sandbox session boundary, so `state.md` is always durable at a clean checkpoint.
+
+**Commit mode per wave.** Single-task waves run in *folded mode*: the state.md update folds into the implementation commit (one commit per task). Multi-task waves, or waves likely to cross a session boundary, run in *checkpointed mode* with separate `in-progress` and `complete` commits for resumability. Failures always get their own durable commit regardless of mode.
 
 Tasks within a wave may run in parallel via sub-agents. Tests tagged to those task IDs run after the wave; a failed test sets the responsible task back to `failed` and stops the loop.
 
