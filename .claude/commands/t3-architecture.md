@@ -9,6 +9,8 @@ Produce the architecture given the current requirements:
 - How components relate and where the seams are.
 - What the build agent must know before touching code.
 
+**Pattern reuse.** If a component or attack surface reuses a pattern already documented in constitution.md's pattern registry (e.g., "OAuth via the existing auth module", "deploy via the existing Eviebot launchd template", "same DB access layer as feature X"), mark it explicitly in design.md as `Reuses pattern: [name from constitution]`. The adversarial skill uses these markers to scope its review — unmarked surfaces get full scrutiny, marked surfaces get HIGH-severity-only review on the assumption that the constitution-registered pattern is already vetted. Only mark surfaces where the reuse is genuine and complete; partial reuse is not reuse.
+
 Then list any requirements that the architecture implies should change. Do not silently reshape requirements — surface them explicitly.
 
 If the surfaced list is non-empty, the user should run t3-requirements next to incorporate the changes, then re-invoke this skill. The loop continues until neither side flags new changes.
