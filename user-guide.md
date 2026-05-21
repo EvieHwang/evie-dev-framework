@@ -46,7 +46,7 @@ Feature folders are named `[feature-name]-[number]`. Numbers are sequential per 
 
 ## Core documents
 
-**`declaration.md`** — the project's statement of intent. What the project is, why it exists, for whom, what it explicitly does not do, and the **Shape** — 3–7 named components or seams the app will eventually have. The first four sections are durable; the Shape is explicitly revisable as the project learns. Shape is not architecture — it commits to no contracts, data models, or deployment shape. It exists so the first feature has something to slice against.
+**`declaration.md`** — the project's statement of intent. What the project is, why it exists, for whom, what it explicitly does not do, the **Shape** (3–7 named components or seams the app will eventually have), and the **Roadmap** (3–7 anticipated features in rough order). The first four sections are durable; Shape and Roadmap are explicitly revisable as the project learns. Shape is not architecture — it commits to no contracts or data models. Roadmap is not a commitment — it is memory, capturing the "what comes next" thinking that otherwise evaporates between project setup and feature 2.
 
 **`constitution.md`** — the project's accumulated judgment. Contains: the standards registry (Apple HIG, WCAG, OWASP, OpenAPI), architectural principles, patterns in use (frontend stack, commit style, service layout), quality gates that must hold before any PR, the testing framework and run command (populated on first test generation), the state-file format spec, and the decision log.
 
@@ -126,9 +126,9 @@ T3 has a pre-build sequence, two iterative loops, and a DAG-driven build. The pr
 /t3-test-coach           feature-name: [name]
 ```
 
-**`declaration`** — project-level coach. Produces `declaration.md` at repo root, including the **Shape** section (3–7 named components/seams, one line each, explicitly revisable). One-time at setup; re-runnable to refine or extend the Shape as the project learns.
+**`declaration`** — project-level coach. Produces `declaration.md` at repo root, including the **Shape** section (3–7 named components/seams) and the **Roadmap** section (3–7 anticipated features in rough order, each tagged with the seams it touches). One-time at setup; re-runnable to refine or extend Shape and Roadmap as the project learns. The Roadmap is the bridge between project-level thinking and feature-level builds — it captures the "what comes next" intuition you have at setup so feature 2 doesn't start cold.
 
-**`t3-feature-declaration`** — coaches a feature-level declaration anchored to the project declaration. Produces `features/[name]-[number]/declaration.md` (What / Why / Success / Shape touched / Out of scope).
+**`t3-feature-declaration`** — coaches a feature-level declaration anchored to the project declaration. Produces `features/[name]-[number]/declaration.md` (What / Why / Success / Shape touched / Out of scope). On invocation, the skill reads the Roadmap and proposes the next unbuilt entry as the default starting point. The user can confirm, override, or update the Roadmap if the sequence has shifted.
 
 The skill behaves differently depending on whether prior features exist:
 - **First-feature mode (walking skeleton).** When no prior feature folders exist, the skill coaches toward the thinnest vertical slice that exercises every seam in the project Shape end-to-end. Most behaviors are stubbed; the success criterion is "all the seams meet." This gives later features a working spine to iterate against instead of a blueprint.

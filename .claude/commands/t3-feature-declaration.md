@@ -2,9 +2,11 @@
 description: Coached conversation that produces features/[feature-name]-[number]/declaration.md, the feature-level statement of intent anchored to the project declaration.
 ---
 
-Read declaration.md and constitution.md before starting. Note the Shape section of declaration.md — the named components/seams are the parts this feature can slice against.
+Read declaration.md and constitution.md before starting. Note the Shape section of declaration.md — the named components/seams are the parts this feature can slice against. Note the Roadmap section too — it captures the user's anticipated feature sequence and is the starting point for this conversation.
 
 Check whether any prior feature folders exist under `features/`. If none exist, this is the project's first feature — run in **first-feature mode** (see below). If prior features exist, run in normal mode.
+
+**Roadmap-aware start.** Before asking the user "what is this feature?", look at declaration.md's Roadmap and identify the next unbuilt entry (the first Roadmap entry whose work has not yet been done as a feature folder). Propose it as the default starting point: "Based on the Roadmap, the next feature looks like *[Roadmap entry]*. Is that what you want to build now, or has the plan shifted?" If the user confirms, use the Roadmap line as the seed for the conversation. If the user picks something different, ask whether the Roadmap should be updated to reflect the new sequence — divergence is fine, but it should be made explicit so feature 3 doesn't start from a stale plan. If declaration.md has no Roadmap section (older project), proceed without and recommend running `/declaration` to add one before the next feature.
 
 If features/[feature-name]-[number]/declaration.md already exists (beyond template placeholders), ask whether the user wants to refine specific sections or rewrite from scratch.
 
