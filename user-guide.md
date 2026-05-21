@@ -46,7 +46,7 @@ Feature folders are named `[feature-name]-[number]`. Numbers are sequential per 
 
 ## Core documents
 
-**`declaration.md`** — the project's statement of intent. What the project is, why it exists, for whom, and what it explicitly does not do. Written once at project setup. Held stable; revising it mid-build usually means it was written at the wrong level of abstraction.
+**`declaration.md`** — the project's statement of intent. What the project is, why it exists, for whom, what it explicitly does not do, and the **Shape** — 3–7 named components or seams the app will eventually have. The first four sections are durable; the Shape is explicitly revisable as the project learns. Shape is not architecture — it commits to no contracts, data models, or deployment shape. It exists so the first feature has something to slice against.
 
 **`constitution.md`** — the project's accumulated judgment. Contains: the standards registry (Apple HIG, WCAG, OWASP, OpenAPI), architectural principles, patterns in use (frontend stack, commit style, service layout), quality gates that must hold before any PR, the testing framework and run command (populated on first test generation), the state-file format spec, and the decision log.
 
@@ -126,9 +126,15 @@ T3 has a pre-build sequence, two iterative loops, and a DAG-driven build. The pr
 /t3-test-coach           feature-name: [name]
 ```
 
-**`declaration`** — project-level coach. Produces `declaration.md` at repo root. One-time at setup; re-runnable to refine. Skip if declaration.md is already current.
+**`declaration`** — project-level coach. Produces `declaration.md` at repo root, including the **Shape** section (3–7 named components/seams, one line each, explicitly revisable). One-time at setup; re-runnable to refine or extend the Shape as the project learns.
 
-**`t3-feature-declaration`** — coaches a feature-level declaration anchored to the project declaration. Produces `features/[name]-[number]/declaration.md` (What / Why / Success / Out of scope).
+**`t3-feature-declaration`** — coaches a feature-level declaration anchored to the project declaration. Produces `features/[name]-[number]/declaration.md` (What / Why / Success / Shape touched / Out of scope).
+
+The skill behaves differently depending on whether prior features exist:
+- **First-feature mode (walking skeleton).** When no prior feature folders exist, the skill coaches toward the thinnest vertical slice that exercises every seam in the project Shape end-to-end. Most behaviors are stubbed; the success criterion is "all the seams meet." This gives later features a working spine to iterate against instead of a blueprint.
+- **Normal mode (feature 2+).** Coaches toward depth on a coherent slice. References the Shape to ask which components the feature touches; a feature that touches every seam is either another skeleton (legitimate if the Shape has grown) or a feature trying to do too much (split it).
+
+Size sanity check at the end of declaration: can the value be described in one sentence without "and" doing heavy lifting? Multiple "ands" usually means multiple features. Surface mis-sizing here — it's far cheaper to re-do the declaration than to re-do requirements, design, and DAG.
 
 **The requirements ↔ architecture loop.** Each skill writes a stability marker at the bottom of its output when it has no new flags to surface (`Requirements stable — no architectural feedback to incorporate`; `Architecture stable — no requirements changes flagged`). The loop has converged when both the most recent `requirements.md` and `design.md` carry their markers. Iterate as many times as needed — twice is common, once is enough for trivial work, more is needed when committed architecture surfaces new constraints.
 
@@ -145,6 +151,10 @@ The skill is bounded against infinite re-running and tuned for verification qual
 When findings exist, the user re-enters the req↔arch loop. `t3-requirements` and `t3-architecture` each read `adversarial-review.md`, address every `open` finding routed to them, and mark those findings `addressed`. The next run of `t3-adversarial` verifies the claims and promotes verified findings to `resolved`.
 
 **`t3-generate-dag`** — gates on (a) both req and arch reporting stable and (b) no `open` HIGH findings in adversarial review. Produces `dag.md` (tasks with ID, description, inputs, outputs, dependencies, wave, acceptance condition) grouped into parallel waves, and initializes `state.md` with every task `pending`.
+
+**One DAG per session.** A T3 feature is designed to run end-to-end in one Sonnet conversation: `/t3-build` drives the whole DAG without crossing a session boundary. The state.md / `/t3-next-step` machinery exists as resilience for sandbox failures, not as a design license for multi-session features. This means the *whole DAG must fit one orchestrator session's working window* — pre-build artifacts in context, plus the code each task produces, plus test output between waves.
+
+The DAG-generation skill sanity-checks the generated DAG against this budget before committing. A DAG of 1–2 tasks was probably T2-sized (the skill recommends downgrading); a DAG that doesn't fit on one screen, runs more than ~3–4 waves, or loads heavy new context (new framework, new dependency, new deploy path) is too large (the skill recommends splitting the feature). The right response to "too large" is to split, not to plan on resuming across sessions. Walking-skeleton features get accommodation on breadth, but if the skeleton's surface still won't fit, the right move is a thinner skeleton — touch a subset of seams in feature 1, extend in feature 2.
 
 **`t3-test-coach`** — generates tests in the chosen framework, tagged by DAG task ID so the build agent knows which tests cover which task. Every task in `dag.md` must have at least one test. If tests already exist from a prior generation, they get regenerated (the prior tests were tied to the prior spec).
 
