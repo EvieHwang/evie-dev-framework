@@ -1,8 +1,8 @@
 ---
-description: Orchestrates the full T3 pre-build pipeline — requirements → architecture (loop until stable) → adversarial (loop to address findings) → DAG → tests → PM summary. Runs autonomously after feature declaration is confirmed, stopping only for decisions that require product judgment. Individual steps can still be run manually at any time for refinement or closer involvement.
+description: Orchestrates the full pre-build pipeline — requirements → architecture (loop until stable) → adversarial (loop to address findings) → DAG → tests → PM summary. Runs autonomously after feature declaration is confirmed, stopping only for decisions that require product judgment. Individual steps can still be run manually at any time for refinement or closer involvement.
 ---
 
-Read features/[feature-name]-[number]/declaration.md before anything else. If it does not exist or contains only template placeholders, stop immediately — run `/t3-feature-declaration` first and confirm the feature declaration before invoking this skill.
+Read features/[feature-name]-[number]/declaration.md before anything else. If it does not exist or contains only template placeholders, stop immediately — run `/feature` first and confirm the feature declaration before invoking this skill.
 
 Read constitution.md and declaration.md.
 
@@ -48,7 +48,7 @@ Each stage runs as a focused sub-agent spawned via the Agent tool. The sub-agent
 
 Spawn a sub-agent with this task:
 
-> Read constitution.md, declaration.md, features/[feature-name]-[number]/declaration.md. If features/[feature-name]-[number]/design.md exists, read it. If features/[feature-name]-[number]/adversarial-review.md exists, read it and address every open finding whose recommended action is t3-requirements — note each addressed finding inline in requirements.md (e.g., *Addresses adversarial F-003.*) and mark it `addressed` in adversarial-review.md.
+> Read constitution.md, declaration.md, features/[feature-name]-[number]/declaration.md. If features/[feature-name]-[number]/design.md exists, read it. If features/[feature-name]-[number]/adversarial-review.md exists, read it and address every open finding whose recommended action is requirements — note each addressed finding inline in requirements.md (e.g., *Addresses adversarial F-003.*) and mark it `addressed` in adversarial-review.md.
 >
 > Produce behavioral requirements in testable terms: user stories with acceptance criteria, edge cases and failure modes, and out-of-scope statements. If this is a revision, note what changed from the prior version and why. At the bottom, state either "Requirements stable — no architectural feedback to incorporate" or list what still needs architectural resolution and why.
 >
@@ -62,7 +62,7 @@ After the sub-agent exits, read requirements.md. Extract: does the stability mar
 
 Spawn a sub-agent with this task:
 
-> Read constitution.md, declaration.md, features/[feature-name]-[number]/declaration.md, features/[feature-name]-[number]/requirements.md. If features/[feature-name]-[number]/design.md exists, read it. If features/[feature-name]-[number]/adversarial-review.md exists, read it and address every open finding whose recommended action is t3-architecture — note each addressed finding inline in design.md (e.g., *Addresses adversarial F-002, F-005.*) and mark it `addressed` in adversarial-review.md.
+> Read constitution.md, declaration.md, features/[feature-name]-[number]/declaration.md, features/[feature-name]-[number]/requirements.md. If features/[feature-name]-[number]/design.md exists, read it. If features/[feature-name]-[number]/adversarial-review.md exists, read it and address every open finding whose recommended action is architecture — note each addressed finding inline in design.md (e.g., *Addresses adversarial F-002, F-005.*) and mark it `addressed` in adversarial-review.md.
 >
 > Produce the architecture: components, contracts, hard technical constraints, seam relationships. For any component or attack surface that genuinely reuses a pattern from constitution.md's pattern registry, mark it explicitly as `Reuses pattern: [name]`. List any requirements that the architecture implies should change. At the bottom, state either "Architecture stable — no requirements changes flagged" or list what should change and why.
 >
@@ -84,7 +84,7 @@ Spawn a sub-agent with this task:
 >
 > Review through lenses: integrity, coverage, security (located findings only — name the specific component and spec section; pre-implementation findings that cannot name a file:line must name the spec section precisely), standards compliance per constitution.md, failure modes, scope drift. Apply pattern-reuse scoping: if design.md marks a surface `Reuses pattern: X`, scope security and failure-modes lenses for that surface to HIGH severity only.
 >
-> For each open finding: ID (F-001…, never reuse), severity (HIGH / MEDIUM / LOW), lens, finding, recommended action (t3-architecture or t3-requirements), status (open). LOW findings without a named location are dropped. Verified addressed findings move to resolved. Acknowledged findings get appended to constitution.md's Acknowledged risks table.
+> For each open finding: ID (F-001…, never reuse), severity (HIGH / MEDIUM / LOW), lens, finding, recommended action (architecture or requirements), status (open). LOW findings without a named location are dropped. Verified addressed findings move to resolved. Acknowledged findings get appended to constitution.md's Acknowledged risks table.
 >
 > Write features/[feature-name]-[number]/adversarial-review.md with a one-line header recording the current commit SHAs of requirements.md and design.md. Commit it.
 
@@ -107,11 +107,11 @@ Spawn a sub-agent with this task:
 >
 > Generate a dependency graph of all build tasks. For each task: ID (T-001…), description, inputs, outputs, dependencies, wave, acceptance condition (objectively checkable). Group into parallel waves. Each task must be atomic and completable in a single session with margin — if a task aggregates multiple distinct concerns, split it.
 >
-> Size check before committing: 1–2 tasks total likely means this is T2-sized (surface this). DAG that does not fit one screen, more than ~3–4 waves, or that introduces a new framework, dependency, or deploy path is too large (surface this and recommend splitting the feature). Walking-skeleton features get accommodation on breadth but not on depth.
+> Size check before committing: 1–2 tasks total likely means this feature is too small for a full DAG (surface this). DAG that does not fit one screen, more than ~3–4 waves, or that introduces a new framework, dependency, or deploy path is too large (surface this and recommend splitting the feature). Walking-skeleton features get accommodation on breadth but not on depth.
 >
 > Write features/[feature-name]-[number]/dag.md. Initialize features/[feature-name]-[number]/state.md with every task in pending status. Commit both.
 
-After the sub-agent exits, read dag.md. If the sub-agent surfaced a T2 sizing problem or a too-large warning, stop and present this to the user before proceeding to Stage 5.
+After the sub-agent exits, read dag.md. If the sub-agent surfaced a sizing problem or a too-large warning, stop and present this to the user before proceeding to Stage 5.
 
 ---
 
@@ -147,7 +147,7 @@ Write features/[feature-name]-[number]/spec-summary.md directly. By this point t
 
 **Build preview** — Number of waves, number of tasks, and the DAG's session-budget assessment. One sentence on whether the DAG fits comfortably in one build session or whether anything about it warrants attention.
 
-**Next step** — "Start a new session and run `/t3-build feature-name: [name]`."
+**Next step** — "Start a new session and run `/build feature-name: [name]`."
 
 Commit spec-summary.md.
 

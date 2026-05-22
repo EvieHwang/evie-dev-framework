@@ -42,7 +42,7 @@ For each open finding:
 - **Severity** — HIGH (blocks DAG generation), MEDIUM (must be addressed or explicitly acknowledged before DAG), LOW (documented but non-blocking).
 - **Lens** — which lens surfaced this.
 - **Finding** — what is wrong.
-- **Recommended action** — which skill to re-run to address it (typically t3-architecture for design/security issues, t3-requirements for coverage/scope issues, or back to t3-feature-declaration for scope drift that needs re-scoping).
+- **Recommended action** — which skill to re-run to address it (typically `/architecture` for design/security issues, `/requirements` for coverage/scope issues, or back to `/feature` for scope drift that needs re-scoping).
 - **Status** — `open` / `addressed` (claimed by req/arch but not yet verified) / `acknowledged` (user accepts the risk without fix) / `deferred` (user defers to future work).
 
 `## Resolved findings`

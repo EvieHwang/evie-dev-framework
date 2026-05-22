@@ -28,6 +28,6 @@ After all wave tasks complete:
 - Run the tests tagged with this wave's task IDs (consult verify.md for the task → test mapping).
 - On test failure for a completed task: set the responsible task back to `failed`, note the reason, commit, stop.
 
-Do not advance past one wave. t3-build re-invokes this skill in a loop to drive the full DAG to completion; users invoke it directly to resume a partial DAG (after a session ended) or for manual single-wave execution. One wave per invocation matches the cloud-sandbox session boundary, so state.md is always durable at a clean boundary.
+Do not advance past one wave. `/build` re-invokes this skill in a loop to drive the full DAG to completion; invoke it directly to resume a partial DAG (after a session ended) or for manual single-wave execution. One wave per invocation matches the cloud-sandbox session boundary, so state.md is always durable at a clean boundary.
 
 Exit condition: every task in the targeted wave is `complete`, tests tagged to those tasks pass, state.md reflects the current truth, and all changes are committed.

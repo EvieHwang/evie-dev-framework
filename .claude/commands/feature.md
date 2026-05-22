@@ -1,5 +1,5 @@
 ---
-description: Coached conversation that produces features/[feature-name]-[number]/declaration.md, the feature-level statement of intent anchored to the project declaration.
+description: Coached conversation that produces features/[feature-name]-[number]/declaration.md — the feature-level statement of intent anchored to the project declaration. Run this before /spec or any manual spec step.
 ---
 
 Read declaration.md and constitution.md before starting. Note the Shape section of declaration.md — the named components/seams are the parts this feature can slice against. Note the Roadmap section too — it captures the user's anticipated feature sequence and is the starting point for this conversation.

@@ -1,12 +1,12 @@
 ---
-description: Tier 1 — small bounded change (bug, tweak, polish, small feature). PR is the documentation.
+description: Quick bounded change — bug, tweak, polish, or small feature that fits in a single session. No feature artifacts are produced. The PR is the documentation.
 ---
 
-Tier 1 — small bounded change. Use for bugs, tweaks, polish, or small features where the intent is clear and the work fits in a single session. No feature artifacts are produced — the PR is the documentation.
+Quick bounded change — use for bugs, tweaks, polish, or small features where the intent is clear and the work fits in a single session. No feature artifacts are produced — the PR is the documentation.
 
 Before proposing the change:
 - Read constitution.md and CLAUDE.md.
-- If this work is refining output from an earlier T2 or T3 feature, read that feature's existing artifacts in features/[name]/.
+- If this work is refining output from an earlier feature, read that feature's existing artifacts in features/[name]/.
 - Identify the minimal change that achieves the intent.
 
 Present the plan. Include: what's changing, why, and what the change could break or affect. Wait for approval before implementing.
