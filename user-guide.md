@@ -115,6 +115,20 @@ T3 has a pre-build sequence, two iterative loops, and a DAG-driven build. The pr
 
 ### Pre-build sequence
 
+The pre-build steps can be run manually or orchestrated automatically. Both options produce identical artifacts — the difference is how much you're involved between steps.
+
+**Orchestrated (recommended for most features)**
+
+```
+/declaration                        # one-time per project
+/t3-feature-declaration  feature-name: [name]
+/t3-spec                 feature-name: [name]
+```
+
+`t3-spec` drives everything from requirements through test generation automatically, using focused sub-agents for each step so each artifact gets full-context quality. It stops only when a decision requires product judgment: scope drift, declaration tension, an unresolvable HIGH finding, or a risk acknowledgment that only you can make. At the end it produces a `spec-summary.md` — a PM-level report covering what the feature does, what risks were acknowledged, what's out of scope, and a build-session preview. Read that, start a new session, and run `/t3-build`.
+
+**Manual (for refinement or closer involvement)**
+
 ```
 /declaration                        # one-time per project
 /t3-feature-declaration  feature-name: [name]
@@ -126,6 +140,8 @@ T3 has a pre-build sequence, two iterative loops, and a DAG-driven build. The pr
 /t3-generate-dag         feature-name: [name]
 /t3-test-coach           feature-name: [name]
 ```
+
+Run steps manually when you want to review and shape each artifact before the next step runs, when you're iterating on a particularly complex or ambiguous feature, or when you want to resume at a specific point. The two approaches are interchangeable — `t3-spec` detects which artifacts already exist and resumes from the right point, so you can switch between manual and orchestrated mid-pipeline.
 
 **`declaration`** — project-level coach. Produces `declaration.md` at repo root, including the **Shape** section (3–7 named components/seams) and the **Roadmap** section (3–7 anticipated features in rough order, each tagged with the seams it touches). One-time at setup; re-runnable to refine or extend Shape and Roadmap as the project learns. The Roadmap is the bridge between project-level thinking and feature-level builds — it captures the "what comes next" intuition you have at setup so feature 2 doesn't start cold.
 
@@ -212,6 +228,7 @@ The standards registry, default principles, and patterns ship pre-filled. You ca
 | `/t3-feature-declaration` | declaration, constitution (+ existing feature declaration on re-run) | `features/[name]-[#]/declaration.md` |
 | `/t3-requirements` | constitution, declarations, design (if exists), adversarial-review (if exists) | `requirements.md` with stability marker |
 | `/t3-architecture` | constitution, declarations, requirements, design (if exists), adversarial-review (if exists) | `design.md` with stability marker |
+| `/t3-spec` | constitution, declarations, all pre-build artifacts (resumes from current state) | drives requirements → architecture → adversarial → DAG → tests; `spec-summary.md` |
 | `/t3-adversarial` | constitution, declarations, requirements, design, prior adversarial-review (if exists) | `adversarial-review.md` (living artifact) |
 | `/t3-generate-dag` | all pre-build artifacts | `dag.md`, `state.md` |
 | `/t3-test-coach` | constitution, declarations, requirements, design, dag | `verify.md`, `tests/` |
