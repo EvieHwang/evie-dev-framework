@@ -19,10 +19,10 @@ Generate a dependency graph of all build tasks. For each task:
 
 Each task must be atomic and completable in a single session with margin. If a task aggregates multiple distinct concerns (e.g., "rendering + CSRF token store + allowlist + accessibility markup"), split it into atomic sub-tasks with explicit wave ordering. Atomicity beats apparent cohesion — a task that bundles five concerns is five chances to partially complete and leave the DAG in a confusing state. When in doubt, split.
 
-**One-DAG-per-session sizing check.** A T3 feature is designed to run end-to-end in one Sonnet conversation: `/t3-build` drives the whole DAG without crossing a session boundary. The state.md / `/t3-next-step` machinery exists as resilience for sandbox failures, not as a design license for multi-session features. This means the *whole DAG must fit one orchestrator session's working window*, including pre-build artifacts in context plus the code each task produces plus test output between waves.
+**One-DAG-per-session sizing check.** A feature build is designed to run end-to-end in one Sonnet conversation: `/build` drives the whole DAG without crossing a session boundary. The state.md / `/next` machinery exists as resilience for sandbox failures, not as a design license for multi-session features. This means the *whole DAG must fit one orchestrator session's working window*, including pre-build artifacts in context plus the code each task produces plus test output between waves.
 
 Before committing dag.md, sanity-check the DAG against the orchestrator-session budget:
-- **Too small** — 1–2 tasks total. The feature was almost certainly T2-sized; surface this and recommend re-doing as T2 rather than committing the DAG.
+- **Too small** — 1–2 tasks total. The feature is probably too small for a full DAG; recommend downsizing — consider a direct `/patch` instead.
 - **Fits on one screen** — the right shape. The user should be able to see all tasks without scrolling. If they can't, the orchestrator's accumulated state is likely to outgrow the working window.
 - **Too large signals:**
   - DAG doesn't fit on one screen.
@@ -42,6 +42,6 @@ Present the DAG and the initial state to the user for review. Revise until the d
 
 Commit the completed dag.md and state.md to the current branch (the sandbox provisions this; do not create a new one).
 
-After committing, recommend the user run `/t3-test-coach` next to generate the test suite before invoking `/t3-build`.
+After committing, recommend the user run `/tests` next to generate the test suite before invoking `/build`.
 
 Exit condition: features/[feature-name]-[number]/dag.md exists with all tasks organized into waves, features/[feature-name]-[number]/state.md exists with every task in `pending` status, the user has confirmed the DAG, and both files are committed.

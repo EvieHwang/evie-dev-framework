@@ -17,7 +17,7 @@ Then list any requirements that the architecture implies should change. Do not s
 
 If the surfaced list is non-empty, the user should run `/requirements` next to incorporate the changes, then re-invoke this skill. The loop continues until neither side flags new changes.
 
-If the surfaced list is empty, this side of the loop is stable. State that explicitly at the end of design.md ("Architecture stable — no requirements changes flagged"). If t3-requirements also reports stable on its next run, the loop has converged.
+If the surfaced list is empty, this side of the loop is stable. State that explicitly at the end of design.md ("Architecture stable — no requirements changes flagged"). If `/requirements` also reports stable on its next run, the loop has converged.
 
 If the architecture surfaces tension with the project or feature declaration (not just requirements), stop and surface that separately. Declaration tension is more serious than requirements tension — it usually means the feature is mis-scoped.
 

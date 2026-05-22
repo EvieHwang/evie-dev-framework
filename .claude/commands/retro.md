@@ -1,8 +1,8 @@
 ---
-description: Coached retro at the end of a T3 build. Produces features/[feature-name]-[number]/retro.md capturing what was learned and proposed template/constitution/CLAUDE.md changes.
+description: Coached retro at the end of a feature build. Produces features/[feature-name]-[number]/retro.md capturing what was learned and proposed template/constitution/CLAUDE.md changes.
 ---
 
-Run after `/t3-build` to capture what was learned during the feature build, and to propose changes to the template, constitution, or CLAUDE.md before the lessons evaporate.
+Run after `/build` to capture what was learned during the feature build, and to propose changes to the template, constitution, or CLAUDE.md before the lessons evaporate.
 
 Read in order: constitution.md, declaration.md, features/[feature-name]-[number]/declaration.md, features/[feature-name]-[number]/requirements.md, features/[feature-name]-[number]/design.md, features/[feature-name]-[number]/adversarial-review.md, features/[feature-name]-[number]/dag.md, features/[feature-name]-[number]/state.md. Skim the feature branch's git log for the build phase.
 
@@ -13,7 +13,7 @@ This is a coached conversation. Walk the user through:
 - **Loop iteration counts vs. spec stability.** How many requirements ↔ architecture passes? How many adversarial passes? Did the loops converge cleanly or did findings keep appearing? If the latter, why.
 - **Recommended additions to constitution.md.** Patterns, principles, quality gates, acknowledged-risk rows.
 - **Recommended additions to CLAUDE.md.** Precedent repos, one-time setup steps, deploy-target nuances surfaced during this build.
-- **Recommended changes to skill prompts.** Specific edits to specific skills (e.g., "`/t3-architecture` should …"). Frame as proposed diffs, not vague feedback.
+- **Recommended changes to skill prompts.** Specific edits to specific skills (e.g., "`/architecture` should …"). Frame as proposed diffs, not vague feedback.
 
 Write features/[feature-name]-[number]/retro.md with these sections. The "Recommended additions" sections should be formatted so they can be lifted directly into a template-update PR — concrete blocks of markdown rather than narrative observations.
 
