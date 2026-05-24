@@ -13,8 +13,8 @@ Check which artifacts exist in features/[feature-name]-[number]/ and resume from
 1. requirements.md
 2. design.md (requirements ↔ architecture loop)
 3. adversarial-review.md
-4. dag.md + state.md
-5. verify.md + tests/
+4. verify.md + tests/
+5. dag.md + state.md
 6. spec-summary.md
 7. push + PR — terminal step
 
@@ -127,35 +127,39 @@ After the sub-agent exits, read adversarial-review.md, then push the branch. Cla
 
 ---
 
-### Stage 4 — DAG generation
-
-Spawn a sub-agent with this task:
-
-> Verify prerequisites: requirements.md and design.md both carry their stability markers; adversarial-review.md has no open HIGH findings and no open MEDIUM findings. If any condition is unmet, report which one and exit without writing.
->
-> Generate a dependency graph of all build tasks. For each task: ID (T-001…), description, inputs, outputs, dependencies, wave, acceptance condition (objectively checkable). Group into parallel waves. Each task must be atomic and completable in a single session with margin — if a task aggregates multiple distinct concerns, split it.
->
-> Size check before committing: 1–2 tasks total likely means this feature is too small for a full DAG (surface this). DAG that does not fit one screen, more than ~3–4 waves, or that introduces a new framework, dependency, or deploy path is too large (surface this and recommend splitting the feature). Walking-skeleton features get accommodation on breadth but not on depth.
->
-> Write features/[feature-name]-[number]/dag.md. Initialize features/[feature-name]-[number]/state.md with every task in pending status. Commit both. Do not push.
-
-After the sub-agent exits, read dag.md and push the branch. If the sub-agent surfaced a sizing problem or a too-large warning, stop and present this to the user before proceeding to Stage 5.
-
----
-
-### Stage 5 — Test generation
+### Stage 4 — Test generation
 
 Spawn a sub-agent with this task:
 
 > Check constitution.md's Testing section. If it names a framework, use it. If empty, choose the framework that best fits the project's stack and any existing tests — write the choice and run command into constitution.md's Testing section before generating tests.
 >
-> Generate two categories of tests: behavioral (from requirements, verifying what was specified) and structural (from design, verifying the architectural constraints). Tag each test with the DAG task IDs it verifies. Every task in dag.md must have at least one test covering it.
+> Generate two categories of tests: behavioral (from requirements, verifying what was specified) and structural (from design, verifying the architectural constraints). Do not tag tests with DAG task IDs — the DAG does not exist yet; task ID labels are applied in the next stage.
 >
 > If a requirement cannot be tested as written, surface the specific untestable requirement and exit without writing any test files — a weak test is worse than no test.
 >
-> Write features/[feature-name]-[number]/verify.md (human-readable coverage summary mapping each DAG task to the tests that verify it) and features/[feature-name]-[number]/tests/ (executable test files). Commit all files, including constitution.md if the Testing section was updated. Do not push.
+> Write features/[feature-name]-[number]/verify.md (human-readable coverage summary mapping each requirement and design seam to the tests that verify it; the task → test mapping will be added in the next stage) and features/[feature-name]-[number]/tests/ (executable test files). Commit all files, including constitution.md if the Testing section was updated. Do not push.
 
-After the sub-agent exits, push the branch. Check whether the sub-agent surfaced any untestable requirements. If so, stop and present the gap to the user — the resolution is to update requirements.md (re-entering the loop from Stage 1) before proceeding.
+After the sub-agent exits, push the branch. Check whether the sub-agent surfaced any untestable requirements. If so, stop and present the gap to the user — the resolution is to update requirements.md (re-entering the loop from Stage 1) before proceeding to Stage 5.
+
+---
+
+### Stage 5 — DAG generation
+
+Spawn a sub-agent with this task:
+
+> Verify prerequisites: requirements.md and design.md both carry their stability markers; adversarial-review.md has no open HIGH findings and no open MEDIUM findings; verify.md and tests/ exist. If any condition is unmet, report which one and exit without writing.
+>
+> Generate a dependency graph of all build tasks. For each task: ID (T-001…), description, inputs, outputs, dependencies, wave, acceptance condition (objectively checkable). Group into parallel waves. Each task must be atomic and completable in a single session with margin — if a task aggregates multiple distinct concerns, split it.
+>
+> Size check before committing: 1–2 tasks total likely means this feature is too small for a full DAG (surface this). DAG that does not fit one screen, more than ~3–4 waves, or that introduces a new framework, dependency, or deploy path is too large (surface this and recommend splitting the feature). Walking-skeleton features get accommodation on breadth but not on depth.
+>
+> Write features/[feature-name]-[number]/dag.md. Initialize features/[feature-name]-[number]/state.md with every task in pending status.
+>
+> Apply task ID labels to the existing tests: read verify.md and the test files in tests/, map each test to the task IDs whose acceptance conditions it verifies, and add the authoritative task → test mapping to verify.md. Every task must have at least one test; if any task has no matching test, surface it and exit without committing — the resolution is to add coverage via /tests before continuing. Do not modify the test files themselves; verify.md is the authoritative mapping.
+>
+> Commit dag.md, state.md, and the updated verify.md. Do not push.
+
+After the sub-agent exits, read dag.md and verify.md and push the branch. If the sub-agent surfaced a sizing problem, a too-large warning, or a task with no test coverage, stop and present this to the user before proceeding to Stage 6.
 
 ---
 
