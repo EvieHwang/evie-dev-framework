@@ -55,6 +55,9 @@ For each open finding:
 `## Resolved findings`
 Findings that were addressed and verified. Keep IDs visible for audit trail; full text can be summarized.
 
+`## Prescription feedback`
+Items from the scope check identified as implementation prescriptions rather than behavioral constraints. Each entry names the specific design section containing the prescription and states why it is prescriptive rather than behavioral. These have no finding IDs and no severity — they are feedback for `/architecture` to restate as behavioral constraints. Omit this section entirely if the scope check found no prescriptions.
+
 Present the open findings to the user. The user decides which to address, acknowledge, or defer. Resolution happens by re-entering the requirements ↔ architecture loop — adversarial does not modify those documents directly.
 
 Commit the completed adversarial-review.md to the current branch (the sandbox provisions this; do not create a new one).
