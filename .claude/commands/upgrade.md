@@ -4,7 +4,7 @@ description: Upgrade a downstream project's framework-owned files to the latest 
 
 Upgrade this project's framework files to the latest version from `Eviebot3000/evie-dev-framework`.
 
-All framework files are fetched via WebFetch using raw GitHub URLs (`https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/<path>`). Do not use `mcp__github__get_file_contents` for the framework repo — it will be denied because the GitHub MCP server in each session is scoped only to the current project's repo.
+All framework files are fetched using `curl` via the Bash tool against raw GitHub URLs (`https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/<path>`). Do not use `mcp__github__get_file_contents` for the framework repo (MCP is scoped to the current project only) and do not use WebFetch (blocked by sandbox network policy).
 
 ## Pre-flight checks
 
@@ -16,13 +16,22 @@ Run these before touching any files. Stop and report if any check fails.
 
 3. **Current version.** Read `FRAMEWORK_VERSION` locally. Record as `from_version`. If the file does not exist, `from_version` is `(pre-versioning)`.
 
-4. **Target version.** Fetch `https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/FRAMEWORK_VERSION` via WebFetch. Strip whitespace. Record as `to_version`.
+4. **Target version.** Run:
+   ```bash
+   curl -sf https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/FRAMEWORK_VERSION
+   ```
+   Strip whitespace from the output. Record as `to_version`. If curl fails (non-zero exit), stop and report the error.
 
 5. **Already current.** If `from_version == to_version`, report "Already up to date at framework version `<to_version>`." and exit without making any changes.
 
 ## Replace framework-owned files
 
-For each file in the list below, fetch `https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/<path>` via WebFetch and write the response body verbatim to the same path in this repo. If the file does not yet exist locally, create it (including any missing parent directories).
+For each file in the list below, run:
+```bash
+curl -sf https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/<path> -o <path>
+```
+
+If the file does not yet exist locally, create any missing parent directories first (`mkdir -p`). Write the fetched content verbatim — do not merge or selectively apply.
 
 ```
 FRAMEWORK_VERSION
@@ -44,15 +53,17 @@ features/README.md
 .claude/commands/upgrade.md
 ```
 
-These files are entirely framework-owned. Write them verbatim — do not merge or selectively apply.
+If any `curl` call fails, stop and report which file failed before making any commits.
 
 ## Structural diff — CLAUDE.md and constitution.md
 
 These files mix framework template sections with project-specific content and are **never replaced wholesale**. Instead, compare specific sections and surface differences for manual review in the PR body.
 
-Fetch the framework versions via WebFetch:
-- `https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/CLAUDE.md`
-- `https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/constitution.md`
+Fetch the framework versions:
+```bash
+curl -sf https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/CLAUDE.md
+curl -sf https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/constitution.md
+```
 
 **CLAUDE.md** — compare the text of each of these sections (from the heading to the next `##` heading) between the framework version and the local file:
 - `## Repo map`
