@@ -10,7 +10,7 @@ Check the `## Testing` section in constitution.md.
 
 Derive two categories of tests:
 1. **Behavioral tests** — from requirements: does it do what was specified?
-2. **Structural tests** — from design: does it implement correctly given the architectural constraints?
+2. **Integration tests from design seams** — from design: do the seams hold? Test that timeouts fire at the right boundaries, errors map to the right taxonomy, and interfaces between components behave as designed. Do not test that specific constructors were called with specific arguments, that private attributes hold specific values, or that internal call signatures match what design described — those test the implementation, not the seam. If a candidate test reads private state or asserts a specific call shape, rewrite it to assert the observable behavior the seam should produce.
 
 Tag each test with the DAG task IDs whose acceptance conditions it verifies. A test may cover multiple tasks; a task may be covered by multiple tests. Every task in dag.md must have at least one test covering it.
 

@@ -25,7 +25,8 @@ A build framework for Claude Code, distributed as a template repository. Choose 
 │   └── [name]-[number]/   # one folder per feature
 │       ├── declaration.md, requirements.md, design.md,
 │       │   adversarial-review.md, dag.md, state.md,
-│       │   verify.md, tests/, spec-summary.md
+│       │   verify.md, tests/, spec-summary.md,
+│       │   build-deviations.md (created during build if design is contradicted)
 │
 └── .claude/
     └── commands/          # all skill commands
@@ -148,7 +149,7 @@ When findings exist, the user re-enters the req↔arch loop. `/requirements` and
 
 The DAG-generation skill sanity-checks the generated DAG against this budget before committing. A DAG of 1–2 tasks was probably too small for a full pipeline (the skill recommends using `/patch` instead); a DAG that doesn't fit on one screen, runs more than ~3–4 waves, or loads heavy new context (new framework, new dependency, new deploy path) is too large (the skill recommends splitting the feature). The right response to "too large" is to split, not to plan on resuming across sessions. Walking-skeleton features get accommodation on breadth, but if the skeleton's surface still won't fit, the right move is a thinner skeleton — touch a subset of seams in feature 1, extend in feature 2.
 
-**`/tests`** — generates tests in the chosen framework, tagged by DAG task ID so the build agent knows which tests cover which task. Every task in `dag.md` must have at least one test. If tests already exist from a prior generation, they get regenerated (the prior tests were tied to the prior spec).
+**`/tests`** — generates tests in the chosen framework, tagged by DAG task ID so the build agent knows which tests cover which task. Every task in `dag.md` must have at least one test. Tests fall into two categories: behavioral tests (from requirements) and integration tests from design seams (from design — test that seams hold, not that specific call signatures were used). If tests already exist from a prior generation, they get regenerated (the prior tests were tied to the prior spec).
 
 ### Build
 
@@ -164,7 +165,9 @@ Orchestrates the DAG. Internally invokes `/next` in a loop until `state.md` show
 
 Tasks within a wave may run in parallel via sub-agents. Tests tagged to those task IDs run after the wave; a failed test sets the responsible task back to `failed` and stops the loop.
 
-Build skills never modify requirements, design, dag, or tests. If something looks wrong during build, the skill stops and surfaces it — the resolution is to update upstream artifacts and regenerate the DAG, not edit in place.
+Build skills treat requirements and tests as immutable. Design is a recommendation — if a call shape doesn't exist or a library behaves differently than described, the build agent satisfies the behavioral requirement another way and records the deviation in `features/[name]-[#]/build-deviations.md`. If a requirement or test looks wrong during build, the skill stops and surfaces it — the resolution is to update those artifacts and regenerate the DAG.
+
+**Build-surfaced upstream findings are normal, not failures.** It is common for build agents to discover that a design constraint can't be satisfied exactly as written. This is part of the workflow, not a signal to abandon the feature. The build-deviations file gives the build agent a legitimate channel for "I went a different way, here's why," without halting the DAG or silently editing the spec. After build, you can re-run `/adversarial` against the actual implementation — build-deviations entries are candidate findings that flow back into the req↔arch loop exactly like any other finding.
 
 ### Retro
 

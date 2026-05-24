@@ -17,6 +17,7 @@ Identify the next wave to execute:
 For each task in the identified wave:
 - Read only the inputs that task requires (per its DAG entry).
 - In checkpointed mode: set status to `in-progress` in state.md, commit. In folded mode: skip this step.
+- Run the tests tagged to this task and confirm they are failing in the expected way — correct module, correct error type, not a false pass. A test that passes before its task has been implemented is tagged incorrectly or is testing the wrong thing; stop and fix the test before writing any implementation code.
 - Implement the task.
 - Verify against the task's acceptance condition.
 - On success: set status to `complete`, note the commit SHA in state.md. In checkpointed mode commit state.md separately; in folded mode include the state.md update in the implementation commit.

@@ -23,7 +23,11 @@ This works equally for a fresh build and for resuming a partial DAG from a prior
 
 **Async sub-agent launches.** If invoking `/next` returns "Async agent launched" (harness behavior on long-running agents), wait for the completion notification before re-invoking. Do not poll or fire additional tool calls in the meantime.
 
-The implementation is the DAG, not your judgment. Do not modify requirements, design, dag, or tests during build. If something looks wrong, stop and surface it — the resolution is to update upstream artifacts (back into the loop) and regenerate the DAG, not to edit in place.
+The implementation is the DAG, not your judgment.
+
+**Requirements and tests are immutable during build.** If a requirement or test looks wrong, stop and surface it — the resolution is to update those artifacts (back into the loop) and regenerate the DAG, not to edit in place.
+
+**Design is a recommendation, not an immutable contract.** If implementation reality contradicts the design — a call shape does not exist, a library behaves differently than described, an API has changed — satisfy the behavioral requirement using a different approach. Record the deviation in `features/[feature-name]-[number]/build-deviations.md` (create it if it does not exist): note the design section contradicted, what was done instead, and why. Do not silently edit design.md in place. On any subsequent `/adversarial` pass, build-deviations entries are treated as candidate findings that flow back into the req↔arch loop.
 
 Final verification:
 - Run the full test suite using the command in constitution.md's `## Testing` section. Per-wave runs in `/next` only execute tests tagged to that wave's tasks; the final full-suite run catches end-to-end and cross-cutting tests that aren't tied to any single task.
