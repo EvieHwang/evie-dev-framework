@@ -83,7 +83,7 @@ Spawn a sub-agent with this task:
 
 > Additional inputs: if features/[feature-name]-[number]/adversarial-review.md exists, address every open finding whose recommended action is architecture — note each addressed finding inline in design.md (e.g., *Addresses adversarial F-002, F-005.*) and mark it `addressed` in adversarial-review.md.
 >
-> Produce the architecture: components, contracts, hard technical constraints, seam relationships. For any component or attack surface that genuinely reuses a pattern from constitution.md's pattern registry, mark it explicitly as `Reuses pattern: [name]`. List any requirements that the architecture implies should change. At the bottom, state either "Architecture stable — no requirements changes flagged" or list what should change and why.
+> Produce the architecture: components, contracts, behavioral constraints, seam relationships. Every constraint must be behavioral — it states a property the user or system cares about (e.g., "requests must time out within 5 s"), not a call signature, attribute name, specific function, or code shape. If a draft constraint names a library API detail or internal implementation shape, restate it as the behavioral property it protects. The single exception: when the call shape itself is the contract (a public interface this project exposes to callers), name it explicitly and say why. For any component or attack surface that genuinely reuses a pattern from constitution.md's pattern registry, mark it explicitly as `Reuses pattern: [name]`. List any requirements that the architecture implies should change. At the bottom, state either "Architecture stable — no requirements changes flagged" or list what should change and why.
 >
 > **Upstream marker maintenance.** If the requirements.md stability marker is stale only because this architecture pass resolved a question that requirements had deferred to architecture (the requirement *text* does not need to change, only the deferred-question note), flip the requirements.md marker to "stable" yourself and add a one-line note in design.md explaining which question was resolved (e.g., "Resolves the BR-6 deferred question; flipping requirements.md marker to stable."). Only do this for marker-only updates — any change to requirement text still routes through Stage 1.
 >
@@ -112,7 +112,7 @@ Spawn a sub-agent with this task:
 >
 > If adversarial-review.md already exists, run `git log -1 --format=%H -- features/[feature-name]-[number]/requirements.md features/[feature-name]-[number]/design.md` and compare against the SHA recorded in the existing review's header. If neither file has changed since the last review, report "No changes since last adversarial review at [SHA]" and exit without modifying the file.
 >
-> Review through lenses: integrity, coverage, security (located findings only — name the specific component and spec section; pre-implementation findings that cannot name a file:line must name the spec section precisely), standards compliance per constitution.md, failure modes, scope drift. Apply pattern-reuse scoping: if design.md marks a surface `Reuses pattern: X`, scope security and failure-modes lenses for that surface to HIGH severity only.
+> Review through lenses — apply **scope check first**: for each candidate finding, trace its subject to a specific sentence in the declarations or requirements.md. If the finding concerns *how* the design implements something (a specific call signature, an internal attribute name, a library API shape, a constructor argument) rather than *what* the feature requires, do not file it as a finding — record it in a `## Prescription feedback` section of adversarial-review.md with the note "implementation prescription, not behavioral constraint" and the specific design section. Only findings whose subjects trace to declared behavior proceed to the remaining lenses: integrity, coverage, security (located findings only — name the specific component and spec section; pre-implementation findings that cannot name a file:line must name the spec section precisely), standards compliance per constitution.md, failure modes, scope drift. Apply pattern-reuse scoping: if design.md marks a surface `Reuses pattern: X`, scope security and failure-modes lenses for that surface to HIGH severity only.
 >
 > For each open finding: ID (F-001…, never reuse), severity (HIGH / MEDIUM / LOW), lens, finding, recommended action (architecture or requirements), status (open). LOW findings without a named location are dropped. Verified addressed findings move to resolved. Acknowledged findings get appended to constitution.md's Acknowledged risks table.
 >
@@ -120,10 +120,11 @@ Spawn a sub-agent with this task:
 
 After the sub-agent exits, read adversarial-review.md, then push the branch. Classify each open finding:
 
+- **Prescription feedback** (`## Prescription feedback` section in adversarial-review.md is non-empty) → return to Stage 2 without incrementing the adversarial counter. The architecture sub-agent will read the feedback and restate prescriptions as behavioral constraints. Do not also return to Stage 1 unless requirements changes are independently needed.
 - **Scope-level** (lens is "Scope drift", or finding surfaces declaration tension) → stop and ask the user
 - **Technical, HIGH or MEDIUM** → increment the adversarial-revision counter and return to Stage 1; the req/arch sub-agents will read adversarial-review.md and address the relevant findings
 - **Technical, LOW** → non-blocking; proceed to Stage 4
-- **No open findings** → proceed to Stage 4
+- **No open findings and no prescription feedback** → proceed to Stage 4
 
 ---
 
@@ -133,7 +134,7 @@ Spawn a sub-agent with this task:
 
 > Check constitution.md's Testing section. If it names a framework, use it. If empty, choose the framework that best fits the project's stack and any existing tests — write the choice and run command into constitution.md's Testing section before generating tests.
 >
-> Generate two categories of tests: behavioral (from requirements, verifying what was specified) and structural (from design, verifying the architectural constraints). Do not tag tests with DAG task IDs — the DAG does not exist yet; task ID labels are applied in the next stage.
+> Generate two categories of tests: behavioral (from requirements, verifying what was specified) and integration tests from design seams (from design: do the seams hold? Test that timeouts fire at the right boundaries, errors map to the right taxonomy, and interfaces between components behave as designed. Do not test private attributes, specific call signatures, or constructor arguments — test observable seam behavior). Do not tag tests with DAG task IDs — the DAG does not exist yet; task ID labels are applied in the next stage.
 >
 > If a requirement cannot be tested as written, surface the specific untestable requirement and exit without writing any test files — a weak test is worse than no test.
 >

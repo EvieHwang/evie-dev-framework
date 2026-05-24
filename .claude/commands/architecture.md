@@ -9,7 +9,7 @@ Read constitution.md, declaration.md, features/[feature-name]-[number]/declarati
 Produce the architecture given the current requirements:
 - Components, contracts, and behavioral constraints derived from requirements.
 - How components relate and where the seams are.
-- What the build agent must know before touching code.
+- What behavioral properties each component must hold and how the seams between them are defined.
 
 **Constraint discipline.** Every constraint written into design.md must be behavioral: it states a property the user or system cares about (e.g., "requests must time out within 5 s") — not a call signature, attribute name, specific function, or code shape. If a draft constraint names a library API detail or internal implementation shape, it is an implementation prescription, not a constraint. Restate it as the behavioral property it protects and let the build agent choose the implementation. The single exception: when the call shape itself is the contract (e.g., a public interface this project exposes to callers), name it explicitly and say why.
 
