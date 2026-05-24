@@ -13,6 +13,12 @@ Read in order: constitution.md, declaration.md, features/[feature-name]-[number]
 
 If the files have changed, scope this pass to what changed: re-examine sections touched by the diff and any finding whose subject overlaps the diff. Do not re-derive findings against unchanged content.
 
+**Mode declaration.** State at the top of adversarial-review.md which mode this pass ran in:
+- **Fresh review** — no prior adversarial-review.md, or the diff since last review is substantial (multiple sections, new components, new requirements). Run the full lens sweep.
+- **Verification pass** — prior adversarial-review.md exists and the diff is targeted (addressing specific findings, surgical edits like one clause or one bootstrap argument). Scope strictly to (a) verifying each `addressed` finding is genuinely fixed in the latest requirements.md/design.md, and (b) attacking the fix itself with the original lens for adjacent-gap regressions. Do not surface new findings against unchanged content.
+
+Pick the mode based on the diff before starting. A surgical fix does not warrant a full lens sweep.
+
 Review through these lenses:
 - **Integrity** — do the documents contradict each other? Does the design implement the requirements? Do the requirements serve the feature declaration?
 - **Coverage** — what behaviors are unspecified? What edge cases are missing?

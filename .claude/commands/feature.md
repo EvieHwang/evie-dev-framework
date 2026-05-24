@@ -10,7 +10,11 @@ Check whether any prior feature folders exist under `features/`. If none exist, 
 
 If features/[feature-name]-[number]/declaration.md already exists (beyond template placeholders), ask whether the user wants to refine specific sections or rewrite from scratch.
 
-**First-feature mode (walking skeleton).** When no prior features exist, coach the user toward a walking skeleton rather than the most valuable feature:
+**First-feature mode (walking skeleton).** When no prior features exist, coach the user toward a walking skeleton rather than the most valuable feature.
+
+*Skip-the-prelude branch.* If the user has already articulated a thin cross-cutting slice — either in the conversation immediately preceding this skill, or as a Roadmap entry explicitly labeled walking-skeleton/skeleton/spine — validate the framing in one sentence ("Confirmed — that's a walking-skeleton shape: thin across the seams.") and proceed to Phase 1. Do not re-deliver the coaching prelude below. The prelude is for cases where the user is reaching for the highest-value feature first.
+
+Otherwise, deliver the coaching prelude:
 
 > "The first feature is not the most valuable feature — it is the thinnest vertical slice that exercises the seams in declaration.md's Shape end-to-end. Most behaviors will be stubbed, hardcoded, or minimal. The success criterion is *all the seams meet*; the value comes from feature 2 onward, which iterates against the skeleton. Picking the highest-value feature first usually means building a system without a spine — feature 2 then has to retrofit one."
 
