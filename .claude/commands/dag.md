@@ -2,11 +2,12 @@
 description: Generates features/[feature-name]-[number]/dag.md (dependency graph of build tasks organized into parallel waves) and initializes state.md.
 ---
 
-Read constitution.md, declaration.md, features/[feature-name]-[number]/declaration.md, features/[feature-name]-[number]/requirements.md, features/[feature-name]-[number]/design.md, and features/[feature-name]-[number]/adversarial-review.md.
+Read constitution.md, declaration.md, features/[feature-name]-[number]/declaration.md, features/[feature-name]-[number]/requirements.md, features/[feature-name]-[number]/design.md, and features/[feature-name]-[number]/adversarial-review.md. Also read features/[feature-name]-[number]/verify.md and all files in features/[feature-name]-[number]/tests/.
 
 Verify the inputs are ready before generating:
 - requirements.md and design.md should both report stable (the requirements ↔ architecture loop has converged). If either is unstable, stop and tell the user to complete the loop first.
 - adversarial-review.md must have no `open` HIGH-severity findings. MEDIUM findings must be marked `acknowledged` or `deferred`. If anything is blocking, stop and tell the user which findings remain.
+- features/[feature-name]-[number]/tests/ and features/[feature-name]-[number]/verify.md must exist. If either is missing, stop and tell the user to run `/tests` first.
 
 Generate a dependency graph of all build tasks. For each task:
 - **ID** — stable identifier (T-001, T-002, …).
@@ -42,8 +43,8 @@ Initialize features/[feature-name]-[number]/state.md following the format in con
 
 Present the DAG and the initial state to the user for review. Revise until the dependency structure and wave grouping are sound.
 
-Commit the completed dag.md and state.md to the current branch (the sandbox provisions this; do not create a new one).
+**Apply task ID labels to the existing tests.** Read features/[feature-name]-[number]/verify.md and the test files in features/[feature-name]-[number]/tests/. For each task in dag.md, identify which tests verify its acceptance condition and add those tests to a task → test mapping section in verify.md. Every task must have at least one test; if any task has no matching test, surface it and stop — the resolution is to add coverage via `/tests` before continuing. Do not modify the test files themselves; verify.md is the authoritative mapping.
 
-After committing, recommend the user run `/tests` next to generate the test suite before invoking `/build`.
+Commit dag.md, state.md, and the updated verify.md to the current branch (the sandbox provisions this; do not create a new one).
 
-Exit condition: features/[feature-name]-[number]/dag.md exists with all tasks organized into waves, features/[feature-name]-[number]/state.md exists with every task in `pending` status, the user has confirmed the DAG, and both files are committed.
+Exit condition: features/[feature-name]-[number]/dag.md exists with all tasks organized into waves, features/[feature-name]-[number]/state.md exists with every task in `pending` status, features/[feature-name]-[number]/verify.md contains a task → test mapping covering every task, the user has confirmed the DAG, and all files are committed.

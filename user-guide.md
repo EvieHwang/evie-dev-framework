@@ -8,7 +8,7 @@ A build framework for Claude Code, distributed as a template repository. Choose 
 
 **Quick change — use `/patch`.** Bug fixes, tweaks, polish, small features where the intent is clear and the work fits in a single session. No feature artifacts are produced. The PR body is the documentation. Use when you know what correct looks like and the change is contained.
 
-**Feature build — use `/feature` → `/spec` or manual steps → `/build`.** Real features built from a written spec. A pre-build sequence (declaration → requirements → design → adversarial review → DAG → tests) produces committed artifacts. A DAG-driven build then executes wave-by-wave. Use when the work is deliberate, spans multiple components, or requires hard-to-reverse architectural decisions.
+**Feature build — use `/feature` → `/spec` or manual steps → `/build`.** Real features built from a written spec. A pre-build sequence (declaration → requirements → design → adversarial review → tests → DAG) produces committed artifacts. A DAG-driven build then executes wave-by-wave. Use when the work is deliberate, spans multiple components, or requires hard-to-reverse architectural decisions.
 
 ---
 
@@ -113,8 +113,8 @@ The pre-build steps can be run manually or orchestrated automatically. Both opti
 ... (iterate requirements ↔ architecture until convergence)
 /adversarial     feature-name: [name]
 ... (address findings via the loop; re-run adversarial)
-/dag             feature-name: [name]
 /tests           feature-name: [name]
+/dag             feature-name: [name]
 ```
 
 Run steps manually when you want to review and shape each artifact before the next step runs, when you're iterating on a particularly complex or ambiguous feature, or when you want to resume at a specific point. The two approaches are interchangeable — `/spec` detects which artifacts already exist and resumes from the right point, so you can switch between manual and orchestrated mid-pipeline.
@@ -143,13 +143,13 @@ The skill is bounded against infinite re-running and tuned for verification qual
 
 When findings exist, the user re-enters the req↔arch loop. `/requirements` and `/architecture` each read `adversarial-review.md`, address every `open` finding routed to them, and mark those findings `addressed`. The next run of `/adversarial` verifies the claims and promotes verified findings to `resolved`.
 
-**`/dag`** — gates on (a) both req and arch reporting stable and (b) no `open` HIGH findings in adversarial review. Produces `dag.md` (tasks with ID, description, inputs, outputs, dependencies, wave, acceptance condition) grouped into parallel waves, and initializes `state.md` with every task `pending`.
+**`/dag`** — gates on (a) both req and arch reporting stable, (b) no `open` HIGH findings in adversarial review, and (c) `tests/` and `verify.md` existing. Produces `dag.md` (tasks with ID, description, inputs, outputs, dependencies, wave, acceptance condition) grouped into parallel waves, initializes `state.md` with every task `pending`, and applies task ID labels to the existing tests by updating `verify.md` with the authoritative task → test mapping.
 
 **One DAG per session.** A feature build is designed to run end-to-end in one Sonnet conversation: `/build` drives the whole DAG without crossing a session boundary. The state.md / `/next` machinery exists as resilience for sandbox failures, not as a design license for multi-session features. This means the *whole DAG must fit one orchestrator session's working window* — pre-build artifacts in context, plus the code each task produces, plus test output between waves.
 
 The DAG-generation skill sanity-checks the generated DAG against this budget before committing. A DAG of 1–2 tasks was probably too small for a full pipeline (the skill recommends using `/patch` instead); a DAG that doesn't fit on one screen, runs more than ~3–4 waves, or loads heavy new context (new framework, new dependency, new deploy path) is too large (the skill recommends splitting the feature). The right response to "too large" is to split, not to plan on resuming across sessions. Walking-skeleton features get accommodation on breadth, but if the skeleton's surface still won't fit, the right move is a thinner skeleton — touch a subset of seams in feature 1, extend in feature 2.
 
-**`/tests`** — generates tests in the chosen framework, tagged by DAG task ID so the build agent knows which tests cover which task. Every task in `dag.md` must have at least one test. Tests fall into two categories: behavioral tests (from requirements) and integration tests from design seams (from design — test that seams hold, not that specific call signatures were used). If tests already exist from a prior generation, they get regenerated (the prior tests were tied to the prior spec).
+**`/tests`** — generates tests in the chosen framework from requirements and design. Tests fall into two categories: behavioral tests (from requirements) and integration tests from design seams (from design — test that seams hold, not that specific call signatures were used). `verify.md` maps each requirement and design seam to the tests that cover it; the task → test mapping is added by `/dag`. If tests already exist from a prior generation, they get regenerated (the prior tests were tied to the prior spec).
 
 ### Build
 
@@ -200,12 +200,12 @@ The standards registry, default principles, and patterns ship pre-filled. You ca
 | `/declaration` | declaration | updated `declaration.md` — for refining Shape, Roadmap, or scope on an existing project |
 | `/patch` | constitution, CLAUDE, feature artifacts (if refining prior work) | code change, commit, PR |
 | `/feature` | declaration, constitution (+ existing feature declaration on re-run) | `features/[name]-[#]/declaration.md` |
-| `/spec` | constitution, declarations, all pre-build artifacts (resumes from current state) | drives requirements → architecture → adversarial → DAG → tests; `spec-summary.md` |
+| `/spec` | constitution, declarations, all pre-build artifacts (resumes from current state) | drives requirements → architecture → adversarial → tests → DAG; `spec-summary.md` |
 | `/requirements` | constitution, declarations, design (if exists), adversarial-review (if exists) | `requirements.md` with stability marker |
 | `/architecture` | constitution, declarations, requirements, design (if exists), adversarial-review (if exists) | `design.md` with stability marker |
 | `/adversarial` | constitution, declarations, requirements, design, prior adversarial-review (if exists) | `adversarial-review.md` (living artifact) |
-| `/dag` | all pre-build artifacts | `dag.md`, `state.md` |
-| `/tests` | constitution, declarations, requirements, design, dag | `verify.md`, `tests/` |
+| `/dag` | all pre-build artifacts + `verify.md`, `tests/` | `dag.md`, `state.md`, updated `verify.md` (task → test mapping) |
+| `/tests` | constitution, declarations, requirements, design | `verify.md`, `tests/` |
 | `/build` | all pre-build + state + verify | drives DAG; final tests; PR |
 | `/next` | constitution, dag, state, verify | executes one wave; updates state |
 | `/retro` | constitution, declarations, all feature artifacts, git log | `features/[name]-[#]/retro.md` |
