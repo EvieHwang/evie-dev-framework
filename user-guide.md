@@ -221,9 +221,11 @@ The skill fetches the latest versions of all framework-owned files from `Eviebot
 
 Projects set up before `/upgrade` existed don't have the skill yet. Bootstrap it in one step: open a Claude Code session on the old project and say:
 
-> Fetch `.claude/commands/upgrade.md` from `Eviebot3000/evie-dev-framework` using `mcp__github__get_file_contents` and write it to `.claude/commands/upgrade.md` in this repo.
+> Fetch the raw content of `https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/.claude/commands/upgrade.md` using the WebFetch tool and write it to `.claude/commands/upgrade.md` in this repo.
 
 Then run `/upgrade` to pull in the rest.
+
+**Note — MCP scoping.** The GitHub MCP server in each cloud session is scoped only to that project's repo. Using `mcp__github__get_file_contents` to reach `evie-dev-framework` will be denied. The `WebFetch` approach above bypasses this by hitting the raw GitHub URL directly, which works for any repo accessible over HTTPS. If the URL is unreachable (network policy or private repo restrictions), the fallback is to copy the file content from the framework repo on GitHub and paste it into the session with the instruction to write it to `.claude/commands/upgrade.md`.
 
 ### Version tracking
 
