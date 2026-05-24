@@ -11,7 +11,9 @@ Produce behavioral requirements in testable terms:
 
 If design.md exists and surfaces architectural constraints, revise requirements to reflect them. Do not silently absorb the constraints — note in the document what changed and why.
 
-If design.md exists and you find no requirements changes are needed, state that explicitly at the end of requirements.md ("Requirements stable — no architectural feedback to incorporate"). If `/architecture` also reports stable on its next run, the loop has converged.
+If design.md exists and you find no requirements changes are needed, perform the convergence anchor check before writing the stability marker: re-read declaration.md and the feature declaration. For each requirement in requirements.md, ask whether it traces to a specific sentence in those declarations or to a finding marked `acknowledged` in adversarial-review.md. Requirements that answer "no" go under a **Requirements awaiting justification** heading at the bottom. A non-empty heading means the document is not stable — surface the unanchored requirements to the user before reporting stable.
+
+If the awaiting-justification list is empty, state explicitly at the end of requirements.md ("Requirements stable — no architectural feedback to incorporate"). If `/architecture` also reports stable on its next run, the loop has converged.
 
 If you surface something that needs more debate than a revision can capture, stop and surface it; don't paper over it.
 

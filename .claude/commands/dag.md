@@ -36,7 +36,9 @@ Walking-skeleton features get explicit accommodation: breadth across seams is ex
 
 Write features/[feature-name]-[number]/dag.md with all tasks, grouped by wave.
 
-Initialize features/[feature-name]-[number]/state.md following the format in constitution.md's `## Artifact formats / State file` section, with every task in `pending` status.
+**Re-running with existing state.** If `state.md` already exists (e.g., upstream spec changed during a build), read it before generating the new DAG. For each task in the new DAG, check whether any existing task matches it closely enough in description and inputs that the upstream change does not affect it. Preserve the ID and status of such tasks. Tasks whose description, inputs, outputs, or acceptance conditions must change due to the upstream revision are reset to `pending`. Add a **Revision notes** section at the bottom of dag.md identifying which upstream change (requirement clause, design section, adversarial finding ID) invalidated which task IDs. Never silently carry a `complete` status for a task the upstream change actually invalidates.
+
+Initialize features/[feature-name]-[number]/state.md following the format in constitution.md's `## Artifact formats / State file` section. If re-running, preserve rows whose status is preserved per the above; reset others to `pending`.
 
 Present the DAG and the initial state to the user for review. Revise until the dependency structure and wave grouping are sound.
 

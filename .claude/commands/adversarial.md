@@ -20,6 +20,7 @@ If the files have changed, scope this pass to what changed: re-examine sections 
 Pick the mode based on the diff before starting. A surgical fix does not warrant a full lens sweep.
 
 Review through these lenses:
+- **Scope check (run before all others).** For each candidate finding, trace its subject to a specific sentence in declaration.md, the feature declaration, or requirements.md. If the finding is about *how* the design implements something — a specific call signature, an internal attribute name, a library API shape, a constructor argument — rather than *what* the feature requires, do not file it. Surface it instead as feedback to `/architecture` with the note "implementation prescription, not behavioral constraint." Only findings whose subjects trace to declared behavior reach the remaining lenses.
 - **Integrity** — do the documents contradict each other? Does the design implement the requirements? Do the requirements serve the feature declaration?
 - **Coverage** — what behaviors are unspecified? What edge cases are missing?
 - **Security** — what attack surfaces does the design expose? Does it comply with constitution.md's security standards? **Every security finding must name the specific file and line where the vulnerability would manifest (or, pre-implementation, the specific component and the requirement/design section).** Findings that only restate a pattern ("SQL injection risk") without naming where it lands are not actionable — drop them or merge into a located finding.
@@ -49,7 +50,7 @@ For each open finding:
 - **Lens** — which lens surfaced this.
 - **Finding** — what is wrong.
 - **Recommended action** — which skill to re-run to address it (typically `/architecture` for design/security issues, `/requirements` for coverage/scope issues, or back to `/feature` for scope drift that needs re-scoping).
-- **Status** — `open` / `addressed` (claimed by req/arch but not yet verified) / `acknowledged` (user accepts the risk without fix) / `deferred` (user defers to future work).
+- **Status** — `open` / `addressed` (claimed by req/arch but not yet verified) / `acknowledged` (user accepts the risk without fix) / `deferred` (user defers to future work). Deferred findings carry a **Re-surface condition** note (e.g., "re-examine when the caching layer lands") so the next adversarial pass — including a post-build pass against the actual implementation — knows when to revisit them.
 
 `## Resolved findings`
 Findings that were addressed and verified. Keep IDs visible for audit trail; full text can be summarized.
