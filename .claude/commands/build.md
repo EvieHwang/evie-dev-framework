@@ -25,7 +25,7 @@ This works equally for a fresh build and for resuming a partial DAG from a prior
 
 The implementation is the DAG, not your judgment.
 
-**Requirements and tests are immutable during build.** If a requirement or test looks wrong, stop and surface it — the resolution is to update those artifacts (back into the loop) and regenerate the DAG, not to edit in place.
+**Tests are the build's source of truth — do not modify them to accommodate implementation choices.** When a test fails, assume the implementation is wrong. If, after genuine investigation, the test itself contains a clear error (wrong assertion, constraint built on a false assumption about the library or requirements), you may correct it — but you must document the change in `features/[feature-name]-[number]/build-deviations.md` (create it if it doesn't exist): record which test changed, what the original assertion was, why it was wrong, and what was corrected. **Requirements remain immutable.** If a requirement looks wrong, stop and surface it — the resolution is to revise requirements and regenerate the DAG.
 
 **Design is a recommendation, not an immutable contract.** If implementation reality contradicts the design — a call shape does not exist, a library behaves differently than described, an API has changed — satisfy the behavioral requirement using a different approach. Record the deviation in `features/[feature-name]-[number]/build-deviations.md` (create it if it does not exist): note the design section contradicted, what was done instead, and why. Do not silently edit design.md in place. On any subsequent `/adversarial` pass, build-deviations entries are treated as candidate findings that flow back into the req↔arch loop.
 
