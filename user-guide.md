@@ -225,7 +225,7 @@ Projects set up before `/upgrade` existed don't have the skill yet. Bootstrap it
 
 Then run `/upgrade` to pull in the rest.
 
-**Note — MCP scoping.** The GitHub MCP server in each cloud session is scoped only to that project's repo. Using `mcp__github__get_file_contents` to reach `evie-dev-framework` will be denied. The `WebFetch` approach above bypasses this by hitting the raw GitHub URL directly, which works for any repo accessible over HTTPS. If the URL is unreachable (network policy or private repo restrictions), the fallback is to copy the file content from the framework repo on GitHub and paste it into the session with the instruction to write it to `.claude/commands/upgrade.md`.
+The `/upgrade` skill itself uses the same WebFetch approach for all subsequent framework file fetches — it never uses the GitHub MCP server to reach `evie-dev-framework`, since each cloud session's MCP is scoped only to the current project's repo.
 
 ### Version tracking
 
