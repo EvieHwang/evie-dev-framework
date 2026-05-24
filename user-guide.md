@@ -192,12 +192,52 @@ The standards registry, default principles, and patterns ship pre-filled. You ca
 
 ---
 
+## Keeping the framework up to date
+
+The framework evolves — skill commands get improved, new skills are added, and the template sections of `CLAUDE.md` and `constitution.md` are refined. Downstream projects stay in sync using `/upgrade`.
+
+### What `/upgrade` does
+
+```
+/upgrade
+```
+
+The skill fetches the latest versions of all framework-owned files from `Eviebot3000/evie-dev-framework` and writes them into the current project. It then opens a PR so the upgrade is visible and reviewable before merging.
+
+**Framework-owned files** (replaced wholesale — projects have no reason to customize these):
+
+| Path | Notes |
+|---|---|
+| `FRAMEWORK_VERSION` | Date-based version marker |
+| `user-guide.md` | This document |
+| `features/README.md` | Feature folder conventions |
+| `.claude/commands/*.md` | All skill command definitions |
+
+**Mixed files** (never replaced wholesale — contain project-specific content alongside framework template sections):
+
+`CLAUDE.md` and `constitution.md` each have sections the framework owns (e.g., `## Build flow note`, `## Standards`, `## Artifact formats`) and sections the project owns (e.g., project name, run/test/deploy blocks, decision log). `/upgrade` compares the framework-owned sections and surfaces any differences as a manual review checklist in the PR body. Apply what's relevant, skip what isn't.
+
+### First-time bootstrap for pre-existing projects
+
+Projects set up before `/upgrade` existed don't have the skill yet. Bootstrap it in one step: open a Claude Code session on the old project and say:
+
+> Fetch `.claude/commands/upgrade.md` from `Eviebot3000/evie-dev-framework` using `mcp__github__get_file_contents` and write it to `.claude/commands/upgrade.md` in this repo.
+
+Then run `/upgrade` to pull in the rest.
+
+### Version tracking
+
+`FRAMEWORK_VERSION` holds a date (`YYYY-MM-DD`) indicating when the framework was last fetched. The upgrade skill reads it to detect whether an upgrade is needed and reports it in the commit and PR. If you need to force a re-upgrade (same-day update), delete `FRAMEWORK_VERSION` locally before running the skill.
+
+---
+
 ## Command reference
 
 | Command | Reads | Produces |
 |---|---|---|
 | `/setup` | CLAUDE, README, user-guide | initialized `CLAUDE.md` + stub `README.md` + `declaration.md`, committed |
 | `/declaration` | declaration | updated `declaration.md` — for refining Shape, Roadmap, or scope on an existing project |
+| `/upgrade` | `FRAMEWORK_VERSION` (local + framework), framework-owned files | updated skill commands, `user-guide.md`, `FRAMEWORK_VERSION`; PR with manual review checklist |
 | `/patch` | constitution, CLAUDE, feature artifacts (if refining prior work) | code change, commit, PR |
 | `/feature` | declaration, constitution (+ existing feature declaration on re-run) | `features/[name]-[#]/declaration.md` |
 | `/spec` | constitution, declarations, all pre-build artifacts (resumes from current state) | drives requirements → architecture → adversarial → tests → DAG; `spec-summary.md` |
