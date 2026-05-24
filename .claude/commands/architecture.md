@@ -19,6 +19,8 @@ If the surfaced list is non-empty, the user should run `/requirements` next to i
 
 If the surfaced list is empty, this side of the loop is stable. State that explicitly at the end of design.md ("Architecture stable — no requirements changes flagged"). If `/requirements` also reports stable on its next run, the loop has converged.
 
+**Upstream marker maintenance.** If requirements.md's stability marker is stale only because this architecture pass resolved a question that requirements had deferred to architecture (the requirement *text* does not need to change, only the deferred-question note), flip the requirements.md marker to "stable" yourself and add a one-line note in design.md explaining which question was resolved (e.g., "Resolves the BR-6 deferred question; flipping requirements.md marker to stable."). Only do this for marker-only updates — any change to requirement text still routes through `/requirements`.
+
 If the architecture surfaces tension with the project or feature declaration (not just requirements), stop and surface that separately. Declaration tension is more serious than requirements tension — it usually means the feature is mis-scoped.
 
 If adversarial-review.md exists, address every `open` finding the recommended action attributes to `architecture` (typically design, security, and standards-compliance findings). In design.md, note which findings were addressed, e.g., `*Addresses adversarial F-002, F-005.*`. Set the status of each addressed finding to `addressed` in adversarial-review.md (the next adversarial run will verify and promote to `resolved`). Findings already marked `acknowledged` or `deferred` do not require action.
