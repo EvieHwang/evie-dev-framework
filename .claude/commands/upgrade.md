@@ -4,6 +4,8 @@ description: Upgrade a downstream project's framework-owned files to the latest 
 
 Upgrade this project's framework files to the latest version from `Eviebot3000/evie-dev-framework`.
 
+All framework files are fetched via WebFetch using raw GitHub URLs (`https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/<path>`). Do not use `mcp__github__get_file_contents` for the framework repo — it will be denied because the GitHub MCP server in each session is scoped only to the current project's repo.
+
 ## Pre-flight checks
 
 Run these before touching any files. Stop and report if any check fails.
@@ -14,13 +16,13 @@ Run these before touching any files. Stop and report if any check fails.
 
 3. **Current version.** Read `FRAMEWORK_VERSION` locally. Record as `from_version`. If the file does not exist, `from_version` is `(pre-versioning)`.
 
-4. **Target version.** Fetch `FRAMEWORK_VERSION` from `Eviebot3000/evie-dev-framework` via `mcp__github__get_file_contents` (owner: `Eviebot3000`, repo: `evie-dev-framework`, path: `FRAMEWORK_VERSION`). Strip whitespace. Record as `to_version`.
+4. **Target version.** Fetch `https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/FRAMEWORK_VERSION` via WebFetch. Strip whitespace. Record as `to_version`.
 
 5. **Already current.** If `from_version == to_version`, report "Already up to date at framework version `<to_version>`." and exit without making any changes.
 
 ## Replace framework-owned files
 
-Fetch each file below from `Eviebot3000/evie-dev-framework` (default branch) via `mcp__github__get_file_contents` and write it to the same path in this repo. If the file does not yet exist locally, create it (including any missing parent directories).
+For each file in the list below, fetch `https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/<path>` via WebFetch and write the response body verbatim to the same path in this repo. If the file does not yet exist locally, create it (including any missing parent directories).
 
 ```
 FRAMEWORK_VERSION
@@ -48,13 +50,17 @@ These files are entirely framework-owned. Write them verbatim — do not merge o
 
 These files mix framework template sections with project-specific content and are **never replaced wholesale**. Instead, compare specific sections and surface differences for manual review in the PR body.
 
-**CLAUDE.md** — fetch the framework version. Compare the text of each of these sections (from the heading to the next `##` heading) between the framework version and the local file:
+Fetch the framework versions via WebFetch:
+- `https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/CLAUDE.md`
+- `https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/constitution.md`
+
+**CLAUDE.md** — compare the text of each of these sections (from the heading to the next `##` heading) between the framework version and the local file:
 - `## Repo map`
 - `## Build flow note`
 - `## Development environment`
 - `## Secrets`
 
-**constitution.md** — fetch the framework version. Compare:
+**constitution.md** — compare:
 - `## Standards`
 - `## Artifact formats`
 
