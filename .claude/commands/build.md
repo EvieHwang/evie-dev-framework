@@ -13,11 +13,14 @@ Verify the inputs are ready:
 If anything is missing or blocking, stop and tell the user which artifact needs attention.
 
 Drive the DAG to completion:
+
+> **No inter-wave pauses.** The loop below runs to completion without surfacing results, asking for confirmation, or outputting anything to the user between waves. Do not narrate wave completions. Do not present a summary and wait. The only stops are `failed`, completion, or a sandbox-imposed interruption. If you find yourself about to output wave results and pause, suppress it and loop immediately instead.
+
 1. Invoke the `/next` skill.
 2. After it returns, re-read state.md and push the branch (`git push -u origin <current-branch>`). `/next` commits but does not push; the orchestrator pushes after each wave so the stop-hook stays quiet and state is durable across sandbox boundaries.
 3. If any task is `failed`: stop and report. Do not retry — the user inspects the failure and decides how to proceed (fix and resume, or re-enter the upstream loop to revise requirements/design).
 4. If all tasks are `complete`: proceed to final verification.
-5. Otherwise: loop back to step 1 **immediately**. Do not pause to present the wave's results or ask the user whether to continue — the user invoked `/build` to drive the DAG end-to-end. The only autonomous stops are a `failed` task, completion, or a sandbox-imposed interruption.
+5. Otherwise: loop back to step 1 immediately without pausing or outputting anything.
 
 This works equally for a fresh build and for resuming a partial DAG from a prior session — `/next` reads state.md and picks up where things left off.
 
