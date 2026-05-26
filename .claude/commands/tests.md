@@ -24,6 +24,6 @@ Outputs:
 
 Present the verify summary to the user for review. Revise until coverage is sound.
 
-Commit verify.md, the test files, and (if updated) constitution.md to the current branch (the sandbox provisions this; do not create a new one).
+Commit verify.md, the test files, and (if updated) constitution.md to the current branch.
 
 Exit condition: both verify.md and the test files exist, every requirement has at least one test, the `## Testing` section in constitution.md is populated, the user has confirmed coverage, and all files are committed.

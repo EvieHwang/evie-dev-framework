@@ -25,6 +25,6 @@ Write features/[feature-name]-[number]/requirements.md.
 
 Present the written requirements to the user for review. Revise until they are sound.
 
-Commit the completed requirements.md to the current branch (the sandbox provisions this; do not create a new one).
+Commit the completed requirements.md to the current branch.
 
 Exit condition: features/[feature-name]-[number]/requirements.md exists, the user has confirmed it, requirements are testable, any changes from the prior version are noted, and the file is committed.
