@@ -79,7 +79,7 @@ Pick one. Uncomment the matching block and delete the others.
 - First load is manual on Eviebot (the runner's non-Aqua session can't bootstrap):
   `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/<plist>`
 - Subsequent deploys: `launchctl kickstart -k gui/$(id -u)/<label>`
-- Deploy via GitHub Actions on push to `main`, on the Eviebot self-hosted runner.
+- Deploy via GitHub Actions on push to `main`, on this repo's own Eviebot self-hosted runner (`runs-on: [self-hosted, macOS, ARM64]`).
   Workflow: rsync → create venv → pip install → write `.env` from secrets → kickstart → **post-deploy health check**.
 - A deploy is "successful" only if the post-deploy health check against the live service passes — a zero exit from `launchctl kickstart` confirms the kick was sent, not that the service is reachable. The workflow must curl a health endpoint (or equivalent) and fail the job if it doesn't return 2xx within a bounded retry window.
 - Before choosing a launchctl label: `launchctl list | grep eviebot` to avoid collisions.
@@ -102,11 +102,12 @@ Pick one. Uncomment the matching block and delete the others.
 -->
 
 ## Secrets
-- Canonical source: **GitHub Actions Secrets at the Eve-Hwang org level.**
+- Canonical source: the **1Password "Eviebot" vault**, one item per service (item name matches the repo), each secret a custom field named exactly for its env var.
+- Workflows read secrets from **repository-level GitHub Actions secrets**, which are a manual mirror of 1Password. 1Password is authoritative — on any conflict, 1Password wins.
 - Commit a `.env.example` listing every required key with no values.
 - Never commit `.env` or any file containing secret values.
 - On deploy, the workflow injects secrets into the chosen target (writes `.env` on Eviebot, sets env vars on AWS, configures the Xcode build). Anything on the target is an artifact of deployment, not a source of truth — if the target is rebuilt, the next deploy recreates it.
-- Adding a new secret: add to Eve-Hwang org secrets → add the key to `.env.example` → add the inject step to the deploy workflow.
+- Adding a new secret: add the field to the 1Password item → sync it into the repo's GitHub Actions secrets → add the key to `.env.example` → add the inject step to the deploy workflow.
 
 ---
 
@@ -114,9 +115,9 @@ Pick one. Uncomment the matching block and delete the others.
 *Carried in this file because Claude Code cloud sandboxes have no `~/.claude/CLAUDE.md`. These coordinates apply to every project, not just this one.*
 
 ### GitHub
-- `EvieHwang` (personal) — used for public AWS-hosted apps
-- `Eve-Hwang` (organization) — used for private Eviebot-hosted apps
-- Self-hosted runner: **Eviebot** (org-level, Default runner group)
+- One account: `EvieHwang` (personal). All repos, secrets, and runners live here.
+- Deployment target is a per-project choice — AWS, Eviebot, or Apple platform — driven by the workload, not by which account hosts the repo.
+- Self-hosted runners are **per repository** (a personal account can't host an org-level runner). Each Eviebot-deployed repo gets its own runner registered to it.
 
 ### AWS
 - Account: `070840362692` (user: `eve-hwang`)
@@ -127,6 +128,12 @@ Pick one. Uncomment the matching block and delete the others.
 - Runner user: `eviebot`. All paths under `/Users/eviebot/`.
 - Services live at `/Users/eviebot/services/<repo-name>/` with a venv at `.venv/`.
 - Use `python3.11` (Homebrew) when 3.10+ is needed; otherwise confirm `python3 --version` before assuming.
+
+#### Self-hosted runners (per repo)
+- One runner per Eviebot-deployed repo, each installed at `~/actions-runner-<repo>/`.
+- Labels: `[self-hosted, macOS, ARM64]`; workflows target it with `runs-on: [self-hosted, macOS, ARM64]`.
+- Managed via `launchd` through the runner's own script: `cd ~/actions-runner-<repo>/ && ./svc.sh start|stop|status|restart`.
+- Adding a runner to a new repo: generate a registration token for the repo, then on Eviebot `mkdir -p ~/actions-runner-<repo> && cd ~/actions-runner-<repo>`, download and extract the runner, `./config.sh --url https://github.com/EvieHwang/<repo> --token <TOKEN>`, then `./svc.sh install && ./svc.sh start`.
 
 ### Gateway integration
 - Gateway repo: `eviebot-mcp-gateway`, running on port 8080.
