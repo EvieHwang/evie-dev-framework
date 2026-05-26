@@ -20,14 +20,15 @@ Check which artifacts exist in features/[feature-name]-[number]/ and resume from
 
 If a PR for this branch already exists and spec-summary.md is populated, report that the pipeline is complete and exit.
 
-## Sub-agent context convention
+## How stages run
 
-Every Stage 1–5 sub-agent reads, before its task:
-- `constitution.md`
-- `declaration.md`
-- every file already present in `features/[feature-name]-[number]/` (declaration, requirements, design, adversarial-review, dag, state, verify, tests/ — whichever exist)
+Each Stage 1–5 runs as a focused sub-agent spawned via the Agent tool. The sub-agent **runs the corresponding skill's own procedure** (`/requirements`, `/architecture`, etc.) — that skill file is the single source of truth for what the stage does, including which files to read, how to handle open adversarial findings, and stability-marker rules. Do not restate the skill's procedure in the spawn prompt.
 
-Per-stage prompts below only name *additional* inputs or special instructions. Do not restate the standard reading list in each prompt.
+Two orchestration overrides apply to every spawned sub-agent, stated once here rather than per stage:
+- **Autonomous mode.** Do not pause to present output to the user or wait for review — the orchestrator owns all user stops (see Orchestration rules). Commit the artifact and exit.
+- **Do not push.** Sub-agents commit only. The orchestrator pushes after each stage.
+
+After a sub-agent exits, the orchestrator reads the committed artifact from disk to make its routing decision, then pushes the branch.
 
 ## Orchestration rules
 
@@ -35,7 +36,7 @@ Per-stage prompts below only name *additional* inputs or special instructions. D
 - Writing or rewriting requirements.md and design.md to incorporate architectural feedback or adversarial findings
 - Marking adversarial findings `addressed` in adversarial-review.md after the relevant sub-agent addresses them
 - Moving to the next stage when the conditions below are met
-- After each stage's commit lands, push the branch to origin (`git push -u origin <current-branch>`). This keeps the stop-hook quiet between stages and gives crash-recovery. Sub-agents commit but do not push; the orchestrator pushes.
+- Pushing the branch (`git push -u origin <current-branch>`) after each stage's commit lands
 
 **Stop and ask the user** — do not proceed autonomously when:
 - Adversarial review surfaces a scope drift finding (lens: "Scope drift") that conflicts with the feature declaration
@@ -59,37 +60,23 @@ If either counter reaches 3 without convergence, stop and surface the specific c
 
 ## Stage execution
 
-Each stage runs as a focused sub-agent spawned via the Agent tool. The sub-agent does its work and commits its output. The orchestrator does not carry the sub-agent's reasoning — after each sub-agent exits, it reads the committed artifact from disk to determine the next routing decision, then pushes.
+Each stage spawns a sub-agent that runs the named skill's procedure under the two orchestration overrides above (autonomous mode, do not push). The spawn prompt names only the skill and any routing detail the orchestrator needs back; it does not restate the skill.
 
 ---
 
 ### Stage 1 — Requirements
 
-Spawn a sub-agent with this task:
+Spawn a sub-agent: **run the `/requirements` procedure.**
 
-> Additional inputs: if features/[feature-name]-[number]/adversarial-review.md exists, address every open finding whose recommended action is requirements — note each addressed finding inline in requirements.md (e.g., *Addresses adversarial F-003.*) and mark it `addressed` in adversarial-review.md.
->
-> Produce behavioral requirements in testable terms: user stories with acceptance criteria, edge cases and failure modes, and out-of-scope statements. If this is a revision, note what changed from the prior version and why. At the bottom, state either "Requirements stable — no architectural feedback to incorporate" or list what still needs architectural resolution and why.
->
-> Write features/[feature-name]-[number]/requirements.md and commit it. Do not push.
-
-After the sub-agent exits, read requirements.md. Extract: does the stability marker appear at the bottom? Push the branch.
+After it exits, read requirements.md: does the stability marker appear at the bottom? Push the branch.
 
 ---
 
 ### Stage 2 — Architecture
 
-Spawn a sub-agent with this task:
+Spawn a sub-agent: **run the `/architecture` procedure.**
 
-> Additional inputs: if features/[feature-name]-[number]/adversarial-review.md exists, address every open finding whose recommended action is architecture — note each addressed finding inline in design.md (e.g., *Addresses adversarial F-002, F-005.*) and mark it `addressed` in adversarial-review.md.
->
-> Produce the architecture: components, contracts, behavioral constraints, seam relationships. Every constraint must be behavioral — it states a property the user or system cares about (e.g., "requests must time out within 5 s"), not a call signature, attribute name, specific function, or code shape. If a draft constraint names a library API detail or internal implementation shape, restate it as the behavioral property it protects. The single exception: when the call shape itself is the contract (a public interface this project exposes to callers), name it explicitly and say why. For any component or attack surface that genuinely reuses a pattern from constitution.md's pattern registry, mark it explicitly as `Reuses pattern: [name]`. List any requirements that the architecture implies should change. At the bottom, state either "Architecture stable — no requirements changes flagged" or list what should change and why.
->
-> **Upstream marker maintenance.** If the requirements.md stability marker is stale only because this architecture pass resolved a question that requirements had deferred to architecture (the requirement *text* does not need to change, only the deferred-question note), flip the requirements.md marker to "stable" yourself and add a one-line note in design.md explaining which question was resolved (e.g., "Resolves the BR-6 deferred question; flipping requirements.md marker to stable."). Only do this for marker-only updates — any change to requirement text still routes through Stage 1.
->
-> Write features/[feature-name]-[number]/design.md and commit it (and requirements.md if you flipped its marker). Do not push.
-
-After the sub-agent exits, read design.md and requirements.md. Extract: are both stability markers present? Does design flag requirements changes? Push the branch.
+After it exits, read design.md and requirements.md: are both stability markers present? Does design flag requirements changes? Push the branch.
 
 **Loop routing:** If either stability marker is absent (and the gap is not marker-only — design didn't flip it because text actually needs changing), increment the req↔arch counter and return to Stage 1. If both are present, proceed to Stage 3.
 
@@ -97,28 +84,11 @@ After the sub-agent exits, read design.md and requirements.md. Extract: are both
 
 ### Stage 3 — Adversarial review
 
-Choose one of two modes based on the change since the last adversarial-review.md:
+Pick the mode the `/adversarial` skill defines (fresh review vs. verification pass) based on the diff since the last adversarial-review.md, and name it in the spawn prompt.
 
-- **Fresh review** — no prior adversarial-review.md, or the requirements/design diff since the last review is substantial (multiple sections, new components, new requirements).
-- **Verification pass** — prior adversarial-review.md exists and the diff is targeted: addressing specific findings from the prior review, surgical edits (one or two clauses, one bootstrap arg, etc.). The pass verifies the fixes hold and does not re-derive findings against unchanged content.
+Spawn a sub-agent: **run the `/adversarial` procedure in [fresh review | verification pass] mode.**
 
-State which mode you're using when spawning the sub-agent.
-
-Spawn a sub-agent with this task:
-
-> Additional instructions: you are running in **[fresh review | verification pass]** mode. In verification mode, do not re-run the full lens sweep — scope to (a) verifying that each `addressed` finding is genuinely fixed in the latest requirements.md/design.md, and (b) attacking the fix itself with the original lens to check it didn't introduce an adjacent gap. Do not surface new findings against unchanged content.
->
-> You are a reviewer judging whether requirements and design are ready to build. Zero findings is a valid outcome when the spec is sound. Only surface a finding if you can name a concrete failure mode it would cause — generic concerns are not findings.
->
-> If adversarial-review.md already exists, run `git log -1 --format=%H -- features/[feature-name]-[number]/requirements.md features/[feature-name]-[number]/design.md` and compare against the SHA recorded in the existing review's header. If neither file has changed since the last review, report "No changes since last adversarial review at [SHA]" and exit without modifying the file.
->
-> Review through lenses — apply **scope check first**: for each candidate finding, trace its subject to a specific sentence in the declarations or requirements.md. If the finding concerns *how* the design implements something (a specific call signature, an internal attribute name, a library API shape, a constructor argument) rather than *what* the feature requires, do not file it as a finding — record it in a `## Prescription feedback` section of adversarial-review.md with the note "implementation prescription, not behavioral constraint" and the specific design section. Only findings whose subjects trace to declared behavior proceed to the remaining lenses: integrity, coverage, security (located findings only — name the specific component and spec section; pre-implementation findings that cannot name a file:line must name the spec section precisely), standards compliance per constitution.md, failure modes, scope drift. Apply pattern-reuse scoping: if design.md marks a surface `Reuses pattern: X`, scope security and failure-modes lenses for that surface to HIGH severity only.
->
-> For each open finding: ID (F-001…, never reuse), severity (HIGH / MEDIUM / LOW), lens, finding, recommended action (architecture or requirements), status (open). LOW findings without a named location are dropped. Verified addressed findings move to resolved. Acknowledged findings get appended to constitution.md's Acknowledged risks table.
->
-> Write features/[feature-name]-[number]/adversarial-review.md with a one-line header recording the current commit SHAs of requirements.md and design.md, plus which mode this pass used. Commit it. Do not push.
-
-After the sub-agent exits, read adversarial-review.md, then push the branch. Classify each open finding:
+After it exits, read adversarial-review.md, then push the branch. Classify each open finding:
 
 - **Prescription feedback** (`## Prescription feedback` section in adversarial-review.md is non-empty) → return to Stage 2 without incrementing the adversarial counter. The architecture sub-agent will read the feedback and restate prescriptions as behavioral constraints. Do not also return to Stage 1 unless requirements changes are independently needed.
 - **Scope-level** (lens is "Scope drift", or finding surfaces declaration tension) → stop and ask the user
@@ -130,37 +100,17 @@ After the sub-agent exits, read adversarial-review.md, then push the branch. Cla
 
 ### Stage 4 — Test generation
 
-Spawn a sub-agent with this task:
+Spawn a sub-agent: **run the `/tests` procedure.**
 
-> Check constitution.md's Testing section. If it names a framework, use it. If empty, choose the framework that best fits the project's stack and any existing tests — write the choice and run command into constitution.md's Testing section before generating tests.
->
-> Generate two categories of tests: behavioral (from requirements, verifying what was specified) and integration tests from design seams (from design: do the seams hold? Test that timeouts fire at the right boundaries, errors map to the right taxonomy, and interfaces between components behave as designed. Do not test private attributes, specific call signatures, or constructor arguments — test observable seam behavior). Do not tag tests with DAG task IDs — the DAG does not exist yet; task ID labels are applied in the next stage.
->
-> If a requirement cannot be tested as written, surface the specific untestable requirement and exit without writing any test files — a weak test is worse than no test.
->
-> Write features/[feature-name]-[number]/verify.md (human-readable coverage summary mapping each requirement and design seam to the tests that verify it; the task → test mapping will be added in the next stage) and features/[feature-name]-[number]/tests/ (executable test files). Commit all files, including constitution.md if the Testing section was updated. Do not push.
-
-After the sub-agent exits, push the branch. Check whether the sub-agent surfaced any untestable requirements. If so, stop and present the gap to the user — the resolution is to update requirements.md (re-entering the loop from Stage 1) before proceeding to Stage 5.
+After it exits, push the branch. If the sub-agent surfaced an untestable requirement, stop and present the gap to the user — the resolution is to update requirements.md (re-entering the loop from Stage 1) before proceeding to Stage 5.
 
 ---
 
 ### Stage 5 — DAG generation
 
-Spawn a sub-agent with this task:
+Spawn a sub-agent: **run the `/dag` procedure.**
 
-> Verify prerequisites: requirements.md and design.md both carry their stability markers; adversarial-review.md has no open HIGH findings and no open MEDIUM findings; verify.md and tests/ exist. If any condition is unmet, report which one and exit without writing.
->
-> Generate a dependency graph of all build tasks. For each task: ID (T-001…), description, inputs, outputs, dependencies, wave, acceptance condition (objectively checkable). Group into parallel waves. Each task must be atomic and completable in a single session with margin — if a task aggregates multiple distinct concerns, split it.
->
-> Size check before committing: 1–2 tasks total likely means this feature is too small for a full DAG (surface this). DAG that does not fit one screen, more than ~3–4 waves, or that introduces a new framework, dependency, or deploy path is too large (surface this and recommend splitting the feature). Walking-skeleton features get accommodation on breadth but not on depth.
->
-> Write features/[feature-name]-[number]/dag.md. Initialize features/[feature-name]-[number]/state.md with every task in pending status.
->
-> Apply task ID labels to the existing tests: read verify.md and the test files in tests/, map each test to the task IDs whose acceptance conditions it verifies, and add the authoritative task → test mapping to verify.md. Every task must have at least one test; if any task has no matching test, surface it and exit without committing — the resolution is to add coverage via /tests before continuing. Do not modify the test files themselves; verify.md is the authoritative mapping.
->
-> Commit dag.md, state.md, and the updated verify.md. Do not push.
-
-After the sub-agent exits, read dag.md and verify.md and push the branch. If the sub-agent surfaced a sizing problem, a too-large warning, or a task with no test coverage, stop and present this to the user before proceeding to Stage 6.
+After it exits, read dag.md and verify.md and push the branch. If the sub-agent surfaced a sizing problem, a too-large warning, or a task with no test coverage, stop and present this to the user before proceeding to Stage 6.
 
 ---
 
