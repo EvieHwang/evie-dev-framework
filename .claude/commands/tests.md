@@ -12,6 +12,8 @@ Derive two categories of tests:
 1. **Behavioral tests** — from requirements: does it do what was specified?
 2. **Integration tests from design seams** — from design: do the seams hold? Test that timeouts fire at the right boundaries, errors map to the right taxonomy, and interfaces between components behave as designed. Do not test that specific constructors were called with specific arguments, that private attributes hold specific values, or that internal call signatures match what design described — those test the implementation, not the seam. If a candidate test reads private state or asserts a specific call shape, rewrite it to assert the observable behavior the seam should produce.
 
+Tests that read a repo-relative file must resolve the path from the test file's own location (`Path(__file__).resolve().parents[N]` or the language equivalent), never an absolute sandbox path.
+
 If verify.md and tests/ already exist, regenerate from the current requirements and design — prior tests are not preserved, they were tied to the prior version of the spec. The user should re-run this skill after any change to requirements or design.
 
 If a requirement cannot be tested as written, surface the gap explicitly and stop. A weak test is worse than no test because it creates false confidence. Resolve the gap by updating requirements.md or design.md (re-entering the loop) before continuing.
