@@ -27,7 +27,7 @@ Development runs in Claude Code cloud sandboxes attached to this GitHub repo.
 - No `~/.claude/CLAUDE.md` exists in the sandbox — user-global preferences are carried at the bottom of this file.
 - GitHub access is via the GitHub MCP server (tools prefixed `mcp__github__`). The `gh` CLI is not available.
 - **Cloud vs. local for deployment debugging.** Use the cloud session for code-level work; use a local Claude Code session for runtime issues on Eviebot (service not starting, launchd state, live logs, injected env vars) where it can observe the running environment directly. Switch signal: two code-level fixes that should have moved the symptom but didn't usually means the problem is environmental, not in the code.
-- Development branch pattern: `claude/<short-task-name>-<suffix>`. Open a PR to `main` when work is complete. Always assign the PR to the repo owner. 
+- Development branch pattern: `claude/<short-task-name>-<suffix>`. The sandbox provisions this branch per session — commit to it, never create a new one. Open a PR to `main` when work is complete. Always assign the PR to the repo owner.
 
 ## Run, test, deps
 Pick the block that matches your project's stack. Uncomment it and delete the others. The header on each block describes when to use it.

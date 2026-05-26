@@ -60,6 +60,6 @@ Items from the scope check identified as implementation prescriptions rather tha
 
 Present the open findings to the user. The user decides which to address, acknowledge, or defer. Resolution happens by re-entering the requirements ↔ architecture loop — adversarial does not modify those documents directly.
 
-Commit the completed adversarial-review.md to the current branch (the sandbox provisions this; do not create a new one).
+Commit the completed adversarial-review.md to the current branch.
 
 Exit condition: features/[feature-name]-[number]/adversarial-review.md exists, every open finding has severity / lens / recommended action / status, prior addressed findings have been verified, the user has reviewed, and the file is committed.

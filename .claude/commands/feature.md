@@ -49,6 +49,6 @@ Write features/[feature-name]-[number]/declaration.md with sections labeled `## 
 
 Present the written declaration back to the user for review. Revise until it says what they meant.
 
-Commit the completed declaration.md to the current branch (the sandbox provisions this; do not create a new one).
+Commit the completed declaration.md to the current branch.
 
 Exit condition: features/[feature-name]-[number]/declaration.md is populated with all four sections, the user has confirmed it, the feature declaration is consistent with the project declaration, and it is committed.

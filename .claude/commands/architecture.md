@@ -35,6 +35,6 @@ Write features/[feature-name]-[number]/design.md.
 
 Present the written design to the user for review. Revise until it is sound.
 
-Commit the completed design.md to the current branch (the sandbox provisions this; do not create a new one).
+Commit the completed design.md to the current branch.
 
 Exit condition: features/[feature-name]-[number]/design.md exists, the user has confirmed it, any requirement-change flags are explicit, and the file is committed.

@@ -45,6 +45,6 @@ Present the DAG and the initial state to the user for review. Revise until the d
 
 **Apply task ID labels to the existing tests.** Read features/[feature-name]-[number]/verify.md and the test files in features/[feature-name]-[number]/tests/. For each task in dag.md, identify which tests verify its acceptance condition and add those tests to a task → test mapping section in verify.md. Every task must have at least one test; if any task has no matching test, surface it and stop — the resolution is to add coverage via `/tests` before continuing. Do not modify the test files themselves; verify.md is the authoritative mapping.
 
-Commit dag.md, state.md, and the updated verify.md to the current branch (the sandbox provisions this; do not create a new one).
+Commit dag.md, state.md, and the updated verify.md to the current branch.
 
 Exit condition: features/[feature-name]-[number]/dag.md exists with all tasks organized into waves, features/[feature-name]-[number]/state.md exists with every task in `pending` status, features/[feature-name]-[number]/verify.md contains a task → test mapping covering every task, the user has confirmed the DAG, and all files are committed.
