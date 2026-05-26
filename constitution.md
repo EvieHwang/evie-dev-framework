@@ -37,7 +37,7 @@ a decision, not made silently.
 [Add app-specific patterns below as they are established.]
 
 ## Quality gates
-- All tests pass.
+- All tests pass — and CI runs the same build the deploy runs. If the test runner doesn't type-check/compile (Vitest, esbuild, isolatedModules), CI also runs the production build (`tsc` / `pnpm build` / `mypy` / `go build`).
 - `README.md` and `CLAUDE.md` exist and are current.
 - `.env.example` lists every key the deploy workflow injects — no drift between the committed example and the actual required secrets.
 

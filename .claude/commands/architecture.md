@@ -15,6 +15,8 @@ Produce the architecture given the current requirements:
 
 **Pattern reuse.** If a component or attack surface reuses a pattern already documented in constitution.md's pattern registry (e.g., "OAuth via the existing auth module", "deploy via the existing Eviebot launchd template", "same DB access layer as feature X"), mark it explicitly in design.md as `Reuses pattern: [name from constitution]`. The adversarial skill uses these markers to scope its review — unmarked surfaces get full scrutiny, marked surfaces get HIGH-severity-only review on the assumption that the constitution-registered pattern is already vetted. Only mark surfaces where the reuse is genuine and complete; partial reuse is not reuse.
 
+When a deploy step mutates an asynchronously-updating cloud resource (Lambda, CloudFront, RDS), the design must sequence the wait/poll between dependent mutations and name any value shared between bootstrap and deploy scripts (e.g. the handler path) as an explicit contract.
+
 Then list any requirements that the architecture implies should change. Do not silently reshape requirements — surface them explicitly.
 
 If the surfaced list is non-empty, the user should run `/requirements` next to incorporate the changes, then re-invoke this skill. The loop continues until neither side flags new changes.
