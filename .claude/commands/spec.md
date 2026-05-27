@@ -128,21 +128,28 @@ Write features/[feature-name]-[number]/spec-summary.md directly. By this point t
 
 **Build preview** — Number of waves, number of tasks, and the DAG's session-budget assessment. One sentence on whether the DAG fits comfortably in one build session or whether anything about it warrants attention.
 
-**Next step** — "Start a new session and run `/build feature-name: [name]`."
+**Next step** — "Review and merge the spec PR, then start a new session and run `/build feature-name: [name]`. The build starts fresh from `main`, so the spec must be merged first."
 
 Commit spec-summary.md and push the branch.
 
 ---
 
-### Stage 7 — Push and open PR
+### Stage 7 — Ensure the handoff PR
 
-The cloud sandbox is ephemeral — the spec is only handed off to the next session via a PR.
+**Session model.** `/feature` and `/spec` typically run in the *same* session, on the same branch — so by the time this stage runs, a PR for the branch usually already exists (opened when `/feature` first pushed the branch). `/build`, by contrast, *always* runs in a separate session: a re-cloned sandbox provisions a new branch off `main`. That means the spec artifacts must be merged to `main` before `/build` can begin. This PR is that merge gate.
 
-Push the branch one final time to ensure all commits are upstream. Open a pull request against `main` using the GitHub MCP server (`mcp__github__create_pull_request`):
+The cloud sandbox is ephemeral — the spec is only handed off to the next session via this PR.
+
+Push the branch one final time to ensure all commits are upstream. Then ensure exactly one handoff PR exists for this branch against `main` (use the GitHub MCP server). Check for an existing PR first (`mcp__github__list_pull_requests` for the branch):
+
+- **If a PR already exists** (the common case — `/feature` opened it earlier in this session): update it (`mcp__github__update_pull_request`) to serve as the spec handoff. Do not open a second PR.
+- **If none exists:** open one (`mcp__github__create_pull_request`).
+
+Either way, the PR should end up as:
 
 - Title: `spec: [feature-name]`
-- Body: include spec-summary.md content plus a one-line note that the PR is the handoff to the next session for `/build`.
+- Body: include spec-summary.md content plus a one-line note that the PR is the handoff to the next session for `/build`, and that it must be merged to `main` before `/build` starts.
 - Ready for review (not draft).
 - Assigned to the repo owner per CLAUDE.md.
 
-Present the PR URL to the user. The pre-build pipeline is complete.
+Do not merge the PR. Present the PR URL to the user and tell them to review and merge it, then start a new session and run `/build` from `main`. The pre-build pipeline is complete.
