@@ -2,9 +2,9 @@
 description: Upgrade a downstream project's framework-owned files to the latest version from evie-dev-framework. Replaces all skill commands, user-guide.md, features/README.md, and FRAMEWORK_VERSION wholesale; surfaces CLAUDE.md and constitution.md structural changes as a manual review checklist in the PR.
 ---
 
-Upgrade this project's framework files to the latest version from `Eviebot3000/evie-dev-framework`.
+Upgrade this project's framework files to the latest version from `EvieHwang/evie-dev-framework`.
 
-All framework files are fetched using `curl` via the Bash tool against raw GitHub URLs (`https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/<path>`). Do not use `mcp__github__get_file_contents` for the framework repo (MCP is scoped to the current project only) and do not use WebFetch (blocked by sandbox network policy).
+All framework files are fetched using `curl` via the Bash tool against raw GitHub URLs (`https://raw.githubusercontent.com/EvieHwang/evie-dev-framework/main/<path>`). Do not use `mcp__github__get_file_contents` for the framework repo (MCP is scoped to the current project only) and do not use WebFetch (blocked by sandbox network policy).
 
 ## Pre-flight checks
 
@@ -18,7 +18,7 @@ Run these before touching any files. Stop and report if any check fails.
 
 4. **Target version.** Run:
    ```bash
-   curl -sf https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/FRAMEWORK_VERSION
+   curl -sf https://raw.githubusercontent.com/EvieHwang/evie-dev-framework/main/FRAMEWORK_VERSION
    ```
    Strip whitespace from the output. Record as `to_version`. If curl fails (non-zero exit), stop and report the error.
 
@@ -28,7 +28,7 @@ Run these before touching any files. Stop and report if any check fails.
 
 For each file in the list below, run:
 ```bash
-curl -sf https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/<path> -o <path>
+curl -sf https://raw.githubusercontent.com/EvieHwang/evie-dev-framework/main/<path> -o <path>
 ```
 
 If the file does not yet exist locally, create any missing parent directories first (`mkdir -p`). Write the fetched content verbatim — do not merge or selectively apply.
@@ -61,8 +61,8 @@ These files mix framework template sections with project-specific content and ar
 
 Fetch the framework versions:
 ```bash
-curl -sf https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/CLAUDE.md
-curl -sf https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/constitution.md
+curl -sf https://raw.githubusercontent.com/EvieHwang/evie-dev-framework/main/CLAUDE.md
+curl -sf https://raw.githubusercontent.com/EvieHwang/evie-dev-framework/main/constitution.md
 ```
 
 **CLAUDE.md** — compare the text of each of these sections (from the heading to the next `##` heading) between the framework version and the local file:

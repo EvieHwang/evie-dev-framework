@@ -123,7 +123,7 @@ Fetches the latest framework-owned files and writes them into the current projec
 **Bootstrapping a pre-`/upgrade` project:** open a session on the old project and ask Claude to `curl` the upgrade command into place:
 
 ```
-curl -sf https://raw.githubusercontent.com/Eviebot3000/evie-dev-framework/main/.claude/commands/upgrade.md -o .claude/commands/upgrade.md
+curl -sf https://raw.githubusercontent.com/EvieHwang/evie-dev-framework/main/.claude/commands/upgrade.md -o .claude/commands/upgrade.md
 ```
 
 Then run `/upgrade` to pull in the rest.
