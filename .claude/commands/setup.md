@@ -37,7 +37,7 @@ Confirm the four answers back to the user before writing anything.
 - Replace `# [Project Name]` with `# <Project name>`.
 - Replace the bracketed one-line-description placeholder with the user's one-liner.
 - Under `## Run, test, deps`: replace the instruction text with a single uncommented block for the chosen stack (install, run/dev, test commands). If the user picked "skip", leave a single-line TODO comment.
-- Under `## Deployment target`: replace the instruction text with a single uncommented block for the chosen target. For Eviebot: reference `/Users/eviebot/services/<repo-name>/` and `launchd`. For AWS: reference account `070840362692`, region `us-east-1`, secrets from Eve-Hwang org Actions secrets. For Apple/Xcode: reference Xcode build + signing. For "none yet": leave a single-line TODO.
+- Under `## Deployment target`: replace the instruction text with a single uncommented block for the chosen target. For Eviebot: reference `/Users/eviebot/services/<repo-name>/` and `launchd`. For AWS: reference account `070840362692`, region `us-east-1`, secrets from the repo's GitHub Actions secrets. For Apple/Xcode: reference Xcode build + signing. For "none yet": leave a single-line TODO.
 
 Do not modify `declaration.md`, `constitution.md`, or anything under `features/`.
 
