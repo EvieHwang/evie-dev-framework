@@ -149,7 +149,7 @@ Either way, the PR should end up as:
 
 - Title: `spec: [feature-name]`
 - Body: include spec-summary.md content plus a one-line note that the PR is the handoff to the next session for `/build`, and that it must be merged to `main` before `/build` starts.
-- Ready for review (not draft).
-- Assigned to the repo owner per CLAUDE.md.
+- Ready for review (not draft) — flip it from draft if `/feature` opened it as a draft.
+- No reviewers or assignees, per CLAUDE.md (the owner is the PR author).
 
 Do not merge the PR. Present the PR URL to the user and tell them to review and merge it, then start a new session and run `/build` from `main`. The pre-build pipeline is complete.

@@ -117,6 +117,6 @@ Run the test suite to confirm no regressions. Feature artifacts and project-spec
 configuration (CLAUDE.md, constitution.md project sections, declaration.md) are unchanged.
 ```
 
-- Ready for review (not draft). Assign to the repo owner per CLAUDE.md.
+- Ready for review (not draft). No reviewers or assignees, per CLAUDE.md (the owner is the PR author).
 
 Present the PR URL to the user.

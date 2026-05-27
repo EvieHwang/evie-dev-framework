@@ -49,6 +49,13 @@ Write features/[feature-name]-[number]/declaration.md with sections labeled `## 
 
 Present the written declaration back to the user for review. Revise until it says what they meant.
 
-Commit the completed declaration.md to the current branch.
+Commit the completed declaration.md to the current branch and push it.
 
-Exit condition: features/[feature-name]-[number]/declaration.md is populated with all four sections, the user has confirmed it, the feature declaration is consistent with the project declaration, and it is committed.
+Phase 3 — set the branch PR's initial state:
+The cloud harness auto-creates a PR for the branch on first push, so a PR will exist whether or not you ask for one — and its auto-generated body will be stale. Treat that PR as a *living* artifact the later tiers (`/spec`, `/build`) keep updating, and seed it accurately now instead of leaving the auto-generated body in place. Ensure exactly one PR exists for this branch against `main` (check with `mcp__github__list_pull_requests`; create with `mcp__github__create_pull_request` only if none exists, otherwise update the existing one with `mcp__github__update_pull_request`):
+
+- Title: `feature: [feature-name]`
+- Body: a short summary of the declaration (What / Why) plus a note that the feature is declared and the spec is pending — `/spec` will revise this PR.
+- Draft. A declaration is not reviewable build work; `/spec` flips it to ready-for-review when the spec lands.
+
+Exit condition: features/[feature-name]-[number]/declaration.md is populated with all four sections, the user has confirmed it, the feature declaration is consistent with the project declaration, it is committed and pushed, and the branch's PR against `main` reflects the declaration.
