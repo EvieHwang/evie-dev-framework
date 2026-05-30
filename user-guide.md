@@ -10,7 +10,7 @@ This guide is the human's map: which command to reach for, and how the pieces fi
 
 **Quick change — `/patch`.** Bug fixes, tweaks, polish, small features where the intent is clear and the work fits one session. No feature artifacts; the PR body is the documentation. Use when you know what correct looks like and the change is contained.
 
-**Feature build — `/feature` → `/spec` (or the manual steps) → `/build`.** Real features built from a written spec. A pre-build sequence produces committed artifacts; a DAG-driven build then executes wave-by-wave. Use when the work is deliberate, spans multiple components, or carries hard-to-reverse architectural decisions.
+**Feature build — `/spec` → `/build`.** Real features built from a written spec. `/spec` produces the feature declaration inline from the chat that led up to it, then runs the full pre-build pipeline (requirements → architecture → adversarial → tests → DAG → PM summary → PR). A DAG-driven build then executes wave-by-wave. Use when the work is deliberate, spans multiple components, or carries hard-to-reverse architectural decisions.
 
 ---
 
@@ -46,17 +46,26 @@ Both paths produce identical artifacts — the difference is how involved you ar
 
 ```
 /declaration                        # one-time per project
+... chat about the next feature ...
+/spec      feature-name: [name]
+```
+
+`/spec` starts by producing `declaration.md` inline from the preceding conversation (Stage 0 — coached only in walking-skeleton mode), then drives requirements → architecture → adversarial → tests → DAG automatically, using focused sub-agents so each artifact gets full-context quality. It stops only when a decision needs product judgment: scope drift, declaration tension, an unresolvable HIGH finding, or a risk acknowledgment only you can make. It ends with `spec-summary.md`, a PM-level report. Read it, start a new session, run `/build`.
+
+**Optional — `/feature` for fuzzy scope**
+
+```
 /feature   feature-name: [name]
 /spec      feature-name: [name]
 ```
 
-`/spec` drives requirements → architecture → adversarial → tests → DAG automatically, using focused sub-agents so each artifact gets full-context quality. It stops only when a decision needs product judgment: scope drift, declaration tension, an unresolvable HIGH finding, or a risk acknowledgment only you can make. It ends with `spec-summary.md`, a PM-level report. Read it, start a new session, run `/build`.
+Reach for `/feature` when the scope is genuinely unclear and you want a coached scoping pass before the spec pipeline runs. `/spec` will detect the populated `declaration.md` and skip Stage 0.
 
 **Manual (for refinement or closer involvement)**
 
 ```
 /declaration                        # one-time per project
-/feature       feature-name: [name]
+/feature       feature-name: [name]   # optional — produces the feature declaration
 /requirements  feature-name: [name]
 /architecture  feature-name: [name]
 ... iterate requirements ↔ architecture until convergence
@@ -66,7 +75,7 @@ Both paths produce identical artifacts — the difference is how involved you ar
 /dag           feature-name: [name]
 ```
 
-Run manually when you want to review and shape each artifact before the next step.
+Run manually when you want to review and shape each artifact before the next step. If `/feature` is skipped, the feature `declaration.md` must be authored before `/requirements` — the requirements skill reads it as its anchor.
 
 ### How the loops work
 

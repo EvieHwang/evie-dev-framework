@@ -1,8 +1,6 @@
 ---
-description: Orchestrates the full pre-build pipeline — requirements → architecture (loop until stable) → adversarial (loop to address findings) → DAG → tests → PM summary → PR. Runs autonomously after feature declaration is confirmed, stopping only for decisions that require product judgment. Individual steps can still be run manually at any time for refinement or closer involvement.
+description: Orchestrates the full pre-build pipeline — declaration → requirements → architecture (loop until stable) → adversarial (loop to address findings) → DAG → tests → PM summary → PR. Produces the feature declaration inline from the preceding conversation (no separate /feature run required), then runs autonomously, stopping only for decisions that require product judgment. Individual steps can still be run manually at any time for refinement or closer involvement.
 ---
-
-Read features/[feature-name]-[number]/declaration.md before anything else. If it does not exist or contains only template placeholders, stop immediately — run `/feature` first and confirm the feature declaration before invoking this skill.
 
 Read constitution.md and declaration.md.
 
@@ -10,6 +8,7 @@ Read constitution.md and declaration.md.
 
 Check which artifacts exist in features/[feature-name]-[number]/ and resume from the appropriate point. Pipeline stages in order:
 
+0. declaration.md (feature-level)
 1. requirements.md
 2. design.md (requirements ↔ architecture loop)
 3. adversarial-review.md
@@ -17,6 +16,8 @@ Check which artifacts exist in features/[feature-name]-[number]/ and resume from
 5. dag.md + state.md
 6. spec-summary.md
 7. push + PR — terminal step
+
+If features/[feature-name]-[number]/declaration.md is missing or contains only template placeholders, start at Stage 0. If it exists and is populated, skip to the first incomplete subsequent stage.
 
 If a PR for this branch already exists and spec-summary.md is populated, report that the pipeline is complete and exit.
 
@@ -61,6 +62,37 @@ If either counter reaches 3 without convergence, stop and surface the specific c
 ## Stage execution
 
 Each stage spawns a sub-agent that runs the named skill's procedure under the two orchestration overrides above (autonomous mode, do not push). The spawn prompt names only the skill and any routing detail the orchestrator needs back; it does not restate the skill.
+
+---
+
+### Stage 0 — Declaration
+
+Skip this stage if features/[feature-name]-[number]/declaration.md already exists and is populated (a prior `/feature` run, or a resumed `/spec` session).
+
+Otherwise, produce the feature declaration inline. The orchestrator runs this stage itself — no sub-agent — because the input is the preceding conversation, which only the orchestrator has.
+
+**First-feature mode (walking skeleton).** If no prior feature folders exist under `features/`, this is the project's first feature. Run the coached walking-skeleton path from `/feature` (deliver the prelude unless the preceding conversation has already articulated a thin cross-cutting slice or a Roadmap entry explicitly labeled walking-skeleton/skeleton/spine). The Success section should describe end-to-end reachability across declaration.md's Shape seams, not depth on any one seam.
+
+**Normal mode (feature 2+).** Look at declaration.md's Roadmap and identify the next unbuilt entry. The seed for the declaration is the preceding conversation in this session — what the user has just articulated as the work they want to begin. If that conversation is empty or too thin to extract intent from, prompt the user for a one-paragraph statement of what this feature is and why now, then proceed.
+
+In both modes, the declaration must contain five sections: **What**, **Why**, **Success**, **Shape touched** (list explicit components from declaration.md's Shape), **Out of scope**. Hold it at the level of intent, not implementation.
+
+**Roadmap alignment.** If the proposed feature does not match the next Roadmap entry, surface the divergence in one sentence and ask whether the Roadmap should be updated to reflect the new sequence. Divergence is fine but should be made explicit. If declaration.md has no Roadmap section, recommend running `/declaration` to add one before the next feature; proceed for now.
+
+**Size sanity-check.** Before writing the file:
+- Can the value be described in one sentence without "and" doing heavy lifting? Multiple "ands" usually means multiple features.
+- First-feature mode: shallow across many seams is correct.
+- Normal mode: deep on a coherent slice is correct; broad and shallow across many seams (outside the skeleton case) usually means the feature should be split.
+
+If the size signals fail, stop and surface the mis-sizing to the user before writing. Re-doing the declaration is much cheaper than re-doing requirements, design, and DAG.
+
+**Declaration ↔ project consistency.** Surface any tension between the feature declaration and declaration.md before writing. If a feature requires a component not listed in the Shape, surface that too — either the Shape was incomplete (update declaration.md) or the feature is straying out of scope.
+
+Write features/[feature-name]-[number]/declaration.md with sections labeled `## What`, `## Why`, `## Success`, `## Shape touched`, `## Out of scope`. If this is a walking skeleton, note that explicitly at the top of the file (e.g., `*Walking skeleton — first feature.*`).
+
+Present the written declaration back to the user for confirmation. Revise until it says what they meant. Do not proceed to Stage 1 until the user confirms.
+
+Commit declaration.md and push the branch. **Do not open a PR at this stage** — the spec PR is opened at Stage 7. The cloud harness may auto-create one on first push; if so, leave it as-is (Stage 7 will update it).
 
 ---
 
@@ -136,20 +168,20 @@ Commit spec-summary.md and push the branch.
 
 ### Stage 7 — Ensure the handoff PR
 
-**Session model.** `/feature` and `/spec` typically run in the *same* session, on the same branch — so by the time this stage runs, a PR for the branch usually already exists (opened when `/feature` first pushed the branch). `/build`, by contrast, *always* runs in a separate session: a re-cloned sandbox provisions a new branch off `main`. That means the spec artifacts must be merged to `main` before `/build` can begin. This PR is that merge gate.
+**Session model.** `/spec` typically runs in one session from declaration through DAG. `/build`, by contrast, *always* runs in a separate session: a re-cloned sandbox provisions a new branch off `main`. That means the spec artifacts must be merged to `main` before `/build` can begin. This PR is that merge gate.
 
 The cloud sandbox is ephemeral — the spec is only handed off to the next session via this PR.
 
 Push the branch one final time to ensure all commits are upstream. Then ensure exactly one handoff PR exists for this branch against `main` (use the GitHub MCP server). Check for an existing PR first (`mcp__github__list_pull_requests` for the branch):
 
-- **If a PR already exists** (the common case — `/feature` opened it earlier in this session): update it (`mcp__github__update_pull_request`) to serve as the spec handoff. Do not open a second PR.
+- **If a PR already exists** (either auto-created by the harness on first push, or opened by an earlier `/feature` run): update it (`mcp__github__update_pull_request`) to serve as the spec handoff. Do not open a second PR.
 - **If none exists:** open one (`mcp__github__create_pull_request`).
 
 Either way, the PR should end up as:
 
 - Title: `spec: [feature-name]`
 - Body: include spec-summary.md content plus a one-line note that the PR is the handoff to the next session for `/build`, and that it must be merged to `main` before `/build` starts.
-- Ready for review (not draft) — flip it from draft if `/feature` opened it as a draft.
+- Ready for review (not draft) — flip it from draft if it was opened as one.
 - No reviewers or assignees, per CLAUDE.md (the owner is the PR author).
 
 Do not merge the PR. Present the PR URL to the user and tell them to review and merge it, then start a new session and run `/build` from `main`. The pre-build pipeline is complete.
