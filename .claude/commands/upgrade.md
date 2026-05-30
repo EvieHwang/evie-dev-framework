@@ -71,6 +71,12 @@ curl -sf https://raw.githubusercontent.com/EvieHwang/evie-dev-framework/main/con
 
 For each section that differs, record both versions (labeled `Framework:` and `Local:`) in the PR body under `## Manual review checklist`. If all compared sections are identical, write "No structural changes to review."
 
+**Removed sections.** The structural diff above surfaces sections that *changed*; it does not catch sections the framework has *deleted* but a downstream repo still carries in its always-loaded files. Check for these explicitly, because a lingering one keeps stale rules and references in context:
+- `CLAUDE.md` — if it still contains a `## Build flow note` section, flag it for deletion (the DAG / `state.md` / `verify.md` build flow it describes no longer exists).
+- `constitution.md` — if it still contains a `## Artifact formats` section (the `state.md` state-file spec), flag it for deletion.
+
+For each removed section still present locally, add an entry under `## Manual review checklist` recommending its deletion and naming what made it obsolete. Do not delete it yourself — these files are never modified by `/upgrade`; the user removes it during manual review.
+
 Do not modify `CLAUDE.md` or `constitution.md`.
 
 ## Commit
