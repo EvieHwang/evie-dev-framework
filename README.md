@@ -18,10 +18,10 @@ The template itself has no executable code and no tests; the quality gates in `c
 
 This framework does two separable things:
 
-1. **Encodes human judgment** — intent, scope, the definition of done, standards, accepted risks. The model can't derive any of it. The framework keeps and protects this.
-2. **Manages execution** — planning, decomposition, iteration. The runtime (Opus 4.8 + Dynamic Workflows) now does this natively, so the framework hands it over instead of hand-walking it.
+1. **Encodes human judgment** — intent, scope, the definition of done, standards, accepted risks. The model can't derive any of it, so the framework keeps and protects it.
+2. **Manages execution** — planning, decomposition, iteration. The runtime handles this natively, so the framework delegates it rather than scripting it.
 
-The whole command set follows from that split. Commands that carry the owner's intent survive; machinery that existed only to supervise the model's process is gone. **Tests are the deliberate exception that lives on both sides** — they are the executable half of "what done means," so the framework makes them more central, not less.
+The command set follows from that split: every command carries the owner's intent into the build and gets out of the runtime's way on execution. **Tests are the deliberate exception that lives on both sides** — they are the executable half of "what done means," so the framework treats them as central rather than as a process step.
 
 ## Getting started
 
@@ -44,10 +44,6 @@ Open the cloned repo in Claude Code and:
 | `/upgrade` | Pull the latest framework files into this project |
 
 The main path is `/spec` → merge → `/build`. Everything else is upstream intent (`/declaration`, `/feature`) or utility. See [`user-guide.md`](user-guide.md) for the full division of labor.
-
-## What changed in V2
-
-V2 collapsed a hand-built orchestration layer that the runtime now provides. See [`MIGRATION.md`](MIGRATION.md) for the thesis and the full before/after.
 
 ## Development environment
 
