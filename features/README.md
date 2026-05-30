@@ -6,4 +6,11 @@ Artifacts for each feature live in their own folder.
 - Numbers are sequential per feature name, used for both ordering and disambiguation.
 - Do not overwrite a previous version — create a new numbered folder.
 
-Folders and the artifacts inside them are **populated by skills at runtime** (requirements, design, etc.). Do not pre-create empty placeholder files: several skills detect their pass number or re-run state by checking which artifacts already exist (e.g., `/requirements` checks for `design.md` to know if it's the first or second pass through the loop; `/adversarial` checks for `adversarial-review.md` to know if it's a fresh review or a re-verification). Empty placeholders confuse those checks.
+Each folder is populated at runtime by `/spec` and `/build`:
+- `declaration.md` — the feature's statement of intent (What / Why / Success / Shape touched / Out of scope).
+- `spec.md` — the behavioral spec: requirements, design, coverage map, and the record of the adversarial gate.
+- `tests/` — the executable acceptance suite. Once green, the feature is done.
+- `build-deviations.md` — created by `/build` only if implementation diverged from the design or a test was corrected.
+- `retro.md` — created by `/retro` if you run one.
+
+Do not pre-create empty placeholder files. The folder and its contents are produced by the commands as they run.

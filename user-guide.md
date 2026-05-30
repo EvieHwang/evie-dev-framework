@@ -1,8 +1,19 @@
 # User Guide
 
-A build framework for Claude Code, distributed as a template repository. It provides slash commands (in `.claude/commands/`) that produce specification artifacts in `features/[name]-[number]/` and then build against them. The artifacts are the contract between what you wanted and what got built.
+A build framework for Claude Code, distributed as a template repository. It provides slash commands (in `.claude/commands/`) that produce a per-feature spec and test suite in `features/[name]-[number]/`, then build against them. The spec and tests are the contract between what you wanted and what got built.
 
 This guide is the human's map: which command to reach for, and how the pieces fit. Each command's exact procedure lives in its own file in `.claude/commands/` — that file is the source of truth, and you can read it if you want the mechanics.
+
+---
+
+## The division of labor
+
+The framework draws one line and holds it:
+
+- **You own intent and the definition of done.** What to build, why, what's out of scope, the standards that apply, the risks you knowingly accept. The model can't derive these — they live in `declaration.md`, `constitution.md`, the per-feature declaration, and above all in the **tests**, which are the executable statement of "done."
+- **The runtime owns orchestration and execution.** Planning the work, decomposing it, running pieces in parallel, iterating until the tests pass. You don't manage waves, state files, or convergence loops — the runtime does that natively, and the framework stays out of its way.
+
+The one place the framework still inserts itself into execution is the **adversarial gate**: an independent, clean-context attack on the spec and tests before any code is written. That isn't process supervision — it catches blind spots the authoring pass can't see in itself, no matter how capable the model is.
 
 ---
 
@@ -10,7 +21,7 @@ This guide is the human's map: which command to reach for, and how the pieces fi
 
 **Quick change — `/patch`.** Bug fixes, tweaks, polish, small features where the intent is clear and the work fits one session. No feature artifacts; the PR body is the documentation. Use when you know what correct looks like and the change is contained.
 
-**Feature build — `/spec` → `/build`.** Real features built from a written spec. `/spec` produces the feature declaration inline from the chat that led up to it, then runs the full pre-build pipeline (requirements → architecture → adversarial → tests → DAG → PM summary → PR). A DAG-driven build then executes wave-by-wave. Use when the work is deliberate, spans multiple components, or carries hard-to-reverse architectural decisions.
+**Feature build — `/spec` → `/build`.** Real features built from a written spec and a test suite. `/spec` produces both and runs them past an independent adversarial gate; `/build`, in a later session, implements against the tests until they pass. Use when the work is deliberate, spans multiple components, or carries hard-to-reverse decisions.
 
 ---
 
@@ -20,7 +31,7 @@ This guide is the human's map: which command to reach for, and how the pieces fi
 - **`constitution.md`** — the project's accumulated judgment: standards registry, architectural principles, patterns in use, quality gates, testing framework, decision log, acknowledged risks.
 - **`CLAUDE.md`** — the app's operational map: repo layout, run/test/deploy context, and user-global identity coordinates.
 
-Every command reads `constitution.md` and `declaration.md` before any architectural decision, and the relevant feature artifacts before acting. This is wired into each command — you don't have to manage it.
+The model reads these before acting; you don't have to remind it to.
 
 ---
 
@@ -36,62 +47,46 @@ Identifies the minimal change, presents a plan with breakage risk surfaced, wait
 
 ## Running a feature build
 
-The pipeline has a pre-build sequence, two iterative loops, and a DAG-driven build. Artifacts get committed as they're produced.
+The path is `/spec` → merge the spec PR → `/build` in a fresh session. The two commands run in separate sessions because the cloud sandbox re-clones from `main` each time — so the spec has to be merged before the build can start from it.
 
-### Pre-build: orchestrated or manual
-
-Both paths produce identical artifacts — the difference is how involved you are between steps. `/spec` detects which artifacts already exist and resumes from the right point, so you can switch between the two mid-pipeline.
-
-**Orchestrated (recommended for most features)**
-
-```
-/declaration                        # one-time per project
-... chat about the next feature ...
-/spec      feature-name: [name]
-```
-
-`/spec` starts by producing `declaration.md` inline from the preceding conversation (Stage 0 — coached only in walking-skeleton mode), then drives requirements → architecture → adversarial → tests → DAG automatically, using focused sub-agents so each artifact gets full-context quality. It stops only when a decision needs product judgment: scope drift, declaration tension, an unresolvable HIGH finding, or a risk acknowledgment only you can make. It ends with `spec-summary.md`, a PM-level report. Read it, start a new session, run `/build`.
-
-**Optional — `/feature` for fuzzy scope**
+### Optionally scope first — `/feature`
 
 ```
 /feature   feature-name: [name]
-/spec      feature-name: [name]
 ```
 
-Reach for `/feature` when the scope is genuinely unclear and you want a coached scoping pass before the spec pipeline runs. `/spec` will detect the populated `declaration.md` and skip Stage 0.
+Reach for `/feature` only when a feature's scope is genuinely fuzzy and you want a coached scoping pass — including the walking-skeleton coaching on a project's first feature. It produces `features/[name]-[number]/declaration.md`. If you skip it, `/spec` produces the declaration inline from the conversation that led up to it.
 
-**Manual (for refinement or closer involvement)**
+### Spec — `/spec`
 
 ```
-/declaration                        # one-time per project
-/feature       feature-name: [name]   # optional — produces the feature declaration
-/requirements  feature-name: [name]
-/architecture  feature-name: [name]
-... iterate requirements ↔ architecture until convergence
-/adversarial   feature-name: [name]
-... address findings via the loop; re-run adversarial
-/tests         feature-name: [name]
-/dag           feature-name: [name]
+... chat about the next feature ...
+/spec   feature-name: [name]
 ```
 
-Run manually when you want to review and shape each artifact before the next step. If `/feature` is skipped, the feature `declaration.md` must be authored before `/requirements` — the requirements skill reads it as its anchor.
+`/spec` runs one forward pass:
 
-### How the loops work
+1. **Declaration** — the feature's intent, from the prior conversation (or from a `/feature` run if you did one).
+2. **Spec** — `spec.md`: behavioral requirements *and* the design that satisfies them, written together in one pass. Constraints are behavioral, not implementation prescriptions.
+3. **Tests** — an executable suite in `tests/` that is the acceptance bar. A weak test is worse than no test, so the suite is the real deliverable, not a sketch.
+4. **Adversarial gate** — a fresh sub-agent in clean context whose only job is to attack the spec and tests. Independence is the point: a review folded into the authoring pass inherits that pass's blind spots.
 
-**Requirements ↔ architecture.** Each side writes a stability marker when it has nothing new to surface. The loop has converged when the latest `requirements.md` and `design.md` both carry their markers. Two passes is common; once is enough for trivial work; more when committed architecture surfaces new constraints.
+This is a single gate, not a loop — no requirements↔architecture round-trips, no stability markers, no convergence counters. `/spec` stops only for decisions you must make: the gate's findings (you choose to fix, acknowledge, or proceed for each), scope drift, tension with the declaration, or a risk that needs your explicit acknowledgment. Acknowledged risks are recorded in `constitution.md`. When the gate is resolved, `/spec` commits and opens a handoff PR against `main`.
 
-**Adversarial ↔ req/arch.** `/adversarial` reviews requirements + design and produces `adversarial-review.md`, a living artifact where every finding has a stable ID, severity, and status. Findings route back to `/requirements` or `/architecture`, which address them and mark them `addressed`; the next `/adversarial` run verifies and promotes to `resolved`. Zero findings is a valid outcome. Acknowledged findings propagate to the constitution's risk table.
+**Merge that PR**, then start a new session.
 
-### Build
+### Build — `/build`
 
 ```
 /build   feature-name: [name]
 ```
 
-Drives the DAG wave-by-wave (via `/next` internally) until every task is complete, runs the full test suite, and opens a PR. `/next` is also user-invokable to resume a partial DAG after a session ended.
+`/build` assumes the spec and tests are final and merged. It plans the work, decomposes it (parallel subagents / Dynamic Workflows where the work warrants it), and implements against the tests, iterating until the full suite passes. Then it opens a PR.
 
-During build, tests are the source of truth and requirements are immutable; design is a recommendation. When implementation reality diverges from design (or a test contains a genuine error), the build agent records the deviation in `build-deviations.md` rather than silently editing the spec — those entries flow back into the adversarial loop on the next pass.
+During build:
+- **Tests are the source of truth.** A failing test means the implementation is wrong — unless the test itself is genuinely in error, in which case the correction is logged in `build-deviations.md`.
+- **Requirements are immutable.** If a requirement looks actually wrong, `/build` stops and kicks back to `/spec` rather than editing the spec — requirements get revised against a fresh adversarial gate, not patched mid-build.
+- **Design is a recommendation.** When reality contradicts the design, `/build` satisfies the behavioral requirement a different way and logs the deviation in `build-deviations.md`.
 
 ### Retro
 
@@ -99,7 +94,7 @@ During build, tests are the source of truth and requirements are immutable; desi
 /retro   feature-name: [name]
 ```
 
-Optional but recommended. A coached conversation producing `retro.md` — what went well, what didn't, and concrete proposed changes to `constitution.md`, `CLAUDE.md`, and skill prompts, with project-vs-template lessons marked separately so template-level improvements lift directly into a framework-update PR.
+Optional but recommended. A coached conversation producing `retro.md` — what went well, what didn't (with build deviations as evidence), whether the adversarial gate earned its keep, and concrete proposed changes to `constitution.md`, `CLAUDE.md`, and skill prompts. Template-level lessons are marked separately so they lift directly into a framework-update PR.
 
 ---
 
@@ -107,12 +102,9 @@ Optional but recommended. A coached conversation producing `retro.md` — what w
 
 After cloning the template:
 
-1. `/setup` — coached fill of `CLAUDE.md` (name, description, run/test/deps, deployment target) and a README stub. Commits to the current branch.
-2. `/declaration` — populate the project declaration (intent + Shape + Roadmap).
-3. Edit `constitution.md`'s app-specific sections as the project develops; the template ships with universal defaults already filled in (prune anything that doesn't apply).
-4. Pick an approach for your first piece of work.
-
-`/setup` runs `/declaration` as its second phase, so steps 1–2 happen in one session on a fresh clone.
+1. `/setup` — coached fill of `CLAUDE.md` (name, description, run/test/deps, deployment target) and a README stub, then `/declaration` as its second phase. Both happen in one session.
+2. Edit `constitution.md`'s app-specific sections as the project develops; the template ships with universal defaults already filled in (prune anything that doesn't apply).
+3. Pick an approach for your first piece of work.
 
 ---
 
@@ -125,9 +117,11 @@ After cloning the template:
 Fetches the latest framework-owned files and writes them into the current project, then opens a PR.
 
 - **Replaced wholesale** (projects have no reason to customize these): `FRAMEWORK_VERSION`, `user-guide.md`, `features/README.md`, `.claude/commands/*.md`.
-- **Never replaced wholesale** (mix framework template sections with project-specific content): `CLAUDE.md` and `constitution.md`. `/upgrade` compares the framework-owned sections and surfaces differences as a manual review checklist in the PR body — apply what's relevant, skip what isn't.
+- **Never replaced wholesale** (mix framework template sections with project-specific content): `CLAUDE.md` and `constitution.md`. `/upgrade` compares the framework-owned sections and surfaces differences as a manual review checklist in the PR body.
 
 `FRAMEWORK_VERSION` holds the date the framework was last fetched; `/upgrade` reads it to detect whether an upgrade is needed. To force a same-day re-upgrade, delete the file locally first.
+
+A project crossing the V1→V2 boundary will have stale command files (`requirements`, `architecture`, `adversarial`, `tests`, `dag`, `next`); `/upgrade` removes them as part of the upgrade.
 
 **Bootstrapping a pre-`/upgrade` project:** open a session on the old project and ask Claude to `curl` the upgrade command into place:
 

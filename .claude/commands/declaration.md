@@ -16,7 +16,7 @@ Hold the conversation at the level of intent, not implementation. Redirect imple
 
 **Shape and Roadmap are explicitly revisable.** The goal of revisiting them is to keep the declaration honest as the project learns, not to preserve original thinking. A Shape that no longer reflects the actual components, or a Roadmap that no longer reflects the actual sequence, is worse than a revision.
 
-When the changes are clear, write the updated `declaration.md` with all seven sections: `## What`, `## Why`, `## For whom`, `## Out of scope`, `## Platform`, `## Shape (revisable)`, `## Roadmap (revisable)`. If the existing declaration predates the `## Platform` section, ask the user to fill it in during this pass — naming an Apple platform (iOS / macOS / iPadOS / visionOS / watchOS / tvOS) activates the HIG-native lens in `/adversarial`. Present it to the user for review. Revise until it says what they meant.
+When the changes are clear, write the updated `declaration.md` with all seven sections: `## What`, `## Why`, `## For whom`, `## Out of scope`, `## Platform`, `## Shape (revisable)`, `## Roadmap (revisable)`. If the existing declaration predates the `## Platform` section, ask the user to fill it in during this pass — naming an Apple platform (iOS / macOS / iPadOS / visionOS / watchOS / tvOS) activates the HIG-native lens in `/spec`'s adversarial gate. Present it to the user for review. Revise until it says what they meant.
 
 Commit `declaration.md` to the current branch with a message describing what changed and why.
 

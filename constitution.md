@@ -20,7 +20,7 @@ explicitly requires otherwise. Deviation must be surfaced as
 a decision, not made silently.
 
 ## Architectural principles
-- Feature files are the spec. They are never modified during implementation; if they are wrong, fix the document and restart the affected step.
+- The spec is the contract. Its requirements are never modified during implementation; if a requirement is wrong, `/build` stops and kicks back to `/spec` rather than patching it mid-build.
 - No Docker for local development unless the project has multi-service dependencies that genuinely require it.
 - All deployments run through GitHub Actions, triggered by push to `main`.
 - Prefer self-hosted runners (Eviebot) over SSH-based deploy steps.
@@ -28,7 +28,6 @@ a decision, not made silently.
 [Add app-specific principles below as they are decided.]
 
 ## Patterns in use
-- **Commits:** conventional commits, one per logical unit of work.
 - **Frontend stack:** React + TypeScript + Tailwind + shadcn/ui. Vanilla JS is acceptable only for stateless single-page tools.
 - **UI aesthetic:** information-dense, 14px base, tight line heights, dark mode as a first-class surface.
 - **UX checklist:** apply Nielsen's 10 heuristics as a general sanity-check on any interface; Apple HIG (see Standards) is the authoritative reference for platform decisions.
@@ -44,8 +43,8 @@ a decision, not made silently.
 [Add app-specific gates below as they are established.]
 
 ## Testing
-Framework: [populated by /tests on first use]
-Run: `[command — populated by /tests on first use]`
+Framework: [populated by /spec on first use]
+Run: `[command — populated by /spec on first use]`
 
 ## Out of scope
 [List what this codebase explicitly does not do. Populated per app.]
@@ -56,21 +55,8 @@ Run: `[command — populated by /tests on first use]`
 [populated as significant decisions are made]
 
 ## Acknowledged risks
-*Cross-feature accumulation surface. Each adversarial finding marked `acknowledged` gets one row here so the project never silently forgets that it knowingly took on risk. Severity is the unmitigated severity — an acknowledged HIGH stays HIGH. Populated by `/adversarial` when a finding moves to `acknowledged`.*
+*Cross-feature accumulation surface. Each adversarial-gate finding the owner marks `acknowledged` gets one row here so the project never silently forgets that it knowingly took on risk. Severity is the unmitigated severity — an acknowledged HIGH stays HIGH. Populated by `/spec` when a finding is acknowledged.*
 
 | Feature | Finding | Severity | Risk | Rationale | Mitigation |
 |---------|---------|----------|------|-----------|------------|
-[populated by the adversarial review process]
-
-## Artifact formats
-
-### State file
-Location: features/[feature-name]-[number]/state.md
-Format:
-| ID | Description | Wave | Status | Notes |
-|----|-------------|------|--------|-------|
-
-Valid status values: pending, in-progress, complete, failed, deviation
-Notes column captures: the commit SHA on completion; the failure reason on failure; for deviation — the design section contradicted and a pointer to build-deviations.md.
-`deviation` means the task completed and its behavioral requirement is satisfied, but the implementation differed from design.md in a way that should flow back to the req↔arch loop. Treat it as `complete` for DAG-progress purposes; treat the deviation note as a candidate adversarial finding.
-Updated by: /dag (initializes), /next (updates)
+[populated by the adversarial gate in /spec]
