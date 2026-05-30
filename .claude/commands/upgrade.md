@@ -37,23 +37,19 @@ If the file does not yet exist locally, create any missing parent directories fi
 FRAMEWORK_VERSION
 user-guide.md
 features/README.md
-.claude/commands/adversarial.md
-.claude/commands/architecture.md
 .claude/commands/build.md
-.claude/commands/dag.md
 .claude/commands/declaration.md
 .claude/commands/feature.md
-.claude/commands/next.md
 .claude/commands/patch.md
-.claude/commands/requirements.md
 .claude/commands/retro.md
 .claude/commands/setup.md
 .claude/commands/spec.md
-.claude/commands/tests.md
 .claude/commands/upgrade.md
 ```
 
 If any `curl` call fails, stop and report which file failed before making any commits.
+
+**Removing stale commands.** A project upgrading across the V2 boundary may still have the V1 command files (`requirements.md`, `architecture.md`, `adversarial.md`, `tests.md`, `dag.md`, `next.md`) under `.claude/commands/`. If any exist, `git rm` them — they were collapsed into `/spec` and `/build` and a lingering file would shadow the new flow. Note in the PR which were removed.
 
 ## Structural diff — CLAUDE.md and constitution.md
 
@@ -67,13 +63,11 @@ curl -sf https://raw.githubusercontent.com/EvieHwang/evie-dev-framework/main/con
 
 **CLAUDE.md** — compare the text of each of these sections (from the heading to the next `##` heading) between the framework version and the local file:
 - `## Repo map`
-- `## Build flow note`
 - `## Development environment`
 - `## Secrets`
 
 **constitution.md** — compare:
 - `## Standards`
-- `## Artifact formats`
 
 For each section that differs, record both versions (labeled `Framework:` and `Local:`) in the PR body under `## Manual review checklist`. If all compared sections are identical, write "No structural changes to review."
 

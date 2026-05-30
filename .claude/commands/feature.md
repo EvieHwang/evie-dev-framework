@@ -40,7 +40,7 @@ Hold the conversation at the level of intent, not implementation. If the user st
 - Can the value be described in one sentence without "and" doing heavy lifting? Multiple "ands" usually means multiple features.
 - If first-feature mode: shallow across many seams is correct.
 - If normal mode: deep on a coherent slice is correct; broad and shallow across many seams (outside the skeleton case) usually means the feature should be split.
-- Surface mis-sizing before Phase 2. Re-doing the declaration is much cheaper than re-doing requirements, design, and DAG.
+- Surface mis-sizing before Phase 2. Re-doing the declaration is much cheaper than re-doing the spec and tests.
 
 Continue until the feature declaration is clearly formed. Do not proceed to Phase 2 until the user confirms.
 

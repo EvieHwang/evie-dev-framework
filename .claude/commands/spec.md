@@ -1,187 +1,123 @@
 ---
-description: Orchestrates the full pre-build pipeline — declaration → requirements → architecture (loop until stable) → adversarial (loop to address findings) → DAG → tests → PM summary → PR. Produces the feature declaration inline from the preceding conversation (no separate /feature run required), then runs autonomously, stopping only for decisions that require product judgment. Individual steps can still be run manually at any time for refinement or closer involvement.
+description: Produces a feature's spec and its executable test suite in one pass, then runs an independent adversarial gate in clean context. Stops only for findings and product-judgment decisions the owner must make; finalizes, commits, and opens a handoff PR for /build. Replaces the old requirements → architecture → adversarial → tests → DAG pipeline.
 ---
 
 Read constitution.md and declaration.md.
 
-## State detection
+`/spec` produces two things for a feature:
+- **`spec.md`** — the behavioral spec: what to build, the seams it touches, and the constraints it must hold. This is the contract.
+- **`tests/`** — an executable test suite that is the acceptance bar. The suite is the deliverable, not a sketch: a weak test is worse than no test because it creates false confidence.
 
-Check which artifacts exist in features/[feature-name]-[number]/ and resume from the appropriate point. Pipeline stages in order:
+It runs as a single forward pass — declaration → spec → tests → independent adversarial gate — not a loop. There are no convergence counters, stability markers, or requirements↔architecture round-trips. The model is trusted to write a self-consistent spec in one pass; the gate exists to catch what a single pass cannot see about itself, not to iterate the author against themselves.
 
-0. declaration.md (feature-level)
-1. requirements.md
-2. design.md (requirements ↔ architecture loop)
-3. adversarial-review.md
-4. verify.md + tests/
-5. dag.md + state.md
-6. spec-summary.md
-7. push + PR — terminal step
+`/spec` stops only for decisions the owner must make (see **When to stop**). Everything else proceeds autonomously.
 
-If features/[feature-name]-[number]/declaration.md is missing or contains only template placeholders, start at Stage 0. If it exists and is populated, skip to the first incomplete subsequent stage.
+## Resuming
 
-If a PR for this branch already exists and spec-summary.md is populated, report that the pipeline is complete and exit.
-
-## How stages run
-
-Each Stage 1–5 runs as a focused sub-agent spawned via the Agent tool. The sub-agent **runs the corresponding skill's own procedure** (`/requirements`, `/architecture`, etc.) — that skill file is the single source of truth for what the stage does, including which files to read, how to handle open adversarial findings, and stability-marker rules. Do not restate the skill's procedure in the spawn prompt.
-
-Two orchestration overrides apply to every spawned sub-agent, stated once here rather than per stage:
-- **Autonomous mode.** Do not pause to present output to the user or wait for review — the orchestrator owns all user stops (see Orchestration rules). Commit the artifact and exit.
-- **Do not push.** Sub-agents commit only. The orchestrator pushes after each stage.
-
-After a sub-agent exits, the orchestrator reads the committed artifact from disk to make its routing decision, then pushes the branch.
-
-## Orchestration rules
-
-**Proceed autonomously:**
-- Writing or rewriting requirements.md and design.md to incorporate architectural feedback or adversarial findings
-- Marking adversarial findings `addressed` in adversarial-review.md after the relevant sub-agent addresses them
-- Moving to the next stage when the conditions below are met
-- Pushing the branch (`git push -u origin <current-branch>`) after each stage's commit lands
-
-**Stop and ask the user** — do not proceed autonomously when:
-- Adversarial review surfaces a scope drift finding (lens: "Scope drift") that conflicts with the feature declaration
-- Architecture or requirements surfaces tension with the project or feature *declaration* (not just with each other)
-- A HIGH adversarial finding cannot be resolved by req/arch changes alone and requires an `acknowledged` or `deferred` decision that only the user can make
-- The req↔arch loop has not converged after 3 cycles (see Iteration tracking) — surface the specific point of tension
-- Adversarial findings have bounced back to Stage 1 three times without converging — surface the unresolved findings
-
-When stopping, present exactly the product or scope question that requires judgment. Do not list technical options. After the user answers, resume from the point where the pipeline stopped.
-
-**Async sub-agent launches.** If the Agent tool returns "Async agent launched" (harness behavior on long-running agents), wait for the completion notification before launching the next stage. Do not poll or fire additional tool calls in the meantime.
-
-## Iteration tracking
-
-Two independent counters, both capped at 3:
-
-- **req↔arch cycles** — one cycle = one Stage 1 → Stage 2 round-trip. Adversarial findings bouncing back to Stage 1 do not increment this counter.
-- **adversarial revision rounds** — one round = one Stage 3 → Stage 1 → Stage 2 → Stage 3 loop triggered by open HIGH/MEDIUM findings.
-
-If either counter reaches 3 without convergence, stop and surface the specific conflict.
-
-## Stage execution
-
-Each stage spawns a sub-agent that runs the named skill's procedure under the two orchestration overrides above (autonomous mode, do not push). The spawn prompt names only the skill and any routing detail the orchestrator needs back; it does not restate the skill.
+Check which artifacts exist in `features/[feature-name]-[number]/`:
+- No populated `declaration.md` → start at Stage 1.
+- `declaration.md` populated, no `spec.md` → start at Stage 2.
+- `spec.md` and `tests/` exist → re-running to refine. Regenerate from the current declaration and conversation, then re-run the gate (Stage 4). Prior tests are tied to the prior spec; do not preserve them blindly.
 
 ---
 
-### Stage 0 — Declaration
+## Stage 1 — Feature declaration
 
-Skip this stage if features/[feature-name]-[number]/declaration.md already exists and is populated (a prior `/feature` run, or a resumed `/spec` session).
+Skip if `features/[feature-name]-[number]/declaration.md` already exists and is populated (a prior `/feature` run).
 
-Otherwise, produce the feature declaration inline. The orchestrator runs this stage itself — no sub-agent — because the input is the preceding conversation, which only the orchestrator has.
+Otherwise produce it inline from the preceding conversation by running the `/feature` procedure — that skill is the source of truth for the walking-skeleton coaching (first feature) and the Roadmap-aware start (feature 2+). Do not restate it here. The declaration must hold five sections — **What**, **Why**, **Success**, **Shape touched**, **Out of scope** — at the level of intent, not implementation. Confirm it with the user before continuing; a mis-sized or mis-scoped declaration is far cheaper to fix here than after the spec and tests are written.
 
-**First-feature mode (walking skeleton).** If no prior feature folders exist under `features/`, this is the project's first feature. Run the coached walking-skeleton path from `/feature` (deliver the prelude unless the preceding conversation has already articulated a thin cross-cutting slice or a Roadmap entry explicitly labeled walking-skeleton/skeleton/spine). The Success section should describe end-to-end reachability across declaration.md's Shape seams, not depth on any one seam.
-
-**Normal mode (feature 2+).** Look at declaration.md's Roadmap and identify the next unbuilt entry. The seed for the declaration is the preceding conversation in this session — what the user has just articulated as the work they want to begin. If that conversation is empty or too thin to extract intent from, prompt the user for a one-paragraph statement of what this feature is and why now, then proceed.
-
-In both modes, the declaration must contain five sections: **What**, **Why**, **Success**, **Shape touched** (list explicit components from declaration.md's Shape), **Out of scope**. Hold it at the level of intent, not implementation.
-
-**Roadmap alignment.** If the proposed feature does not match the next Roadmap entry, surface the divergence in one sentence and ask whether the Roadmap should be updated to reflect the new sequence. Divergence is fine but should be made explicit. If declaration.md has no Roadmap section, recommend running `/declaration` to add one before the next feature; proceed for now.
-
-**Size sanity-check.** Before writing the file:
-- Can the value be described in one sentence without "and" doing heavy lifting? Multiple "ands" usually means multiple features.
-- First-feature mode: shallow across many seams is correct.
-- Normal mode: deep on a coherent slice is correct; broad and shallow across many seams (outside the skeleton case) usually means the feature should be split.
-
-If the size signals fail, stop and surface the mis-sizing to the user before writing. Re-doing the declaration is much cheaper than re-doing requirements, design, and DAG.
-
-**Declaration ↔ project consistency.** Surface any tension between the feature declaration and declaration.md before writing. If a feature requires a component not listed in the Shape, surface that too — either the Shape was incomplete (update declaration.md) or the feature is straying out of scope.
-
-Write features/[feature-name]-[number]/declaration.md with sections labeled `## What`, `## Why`, `## Success`, `## Shape touched`, `## Out of scope`. If this is a walking skeleton, note that explicitly at the top of the file (e.g., `*Walking skeleton — first feature.*`).
-
-Present the written declaration back to the user for confirmation. Revise until it says what they meant. Do not proceed to Stage 1 until the user confirms.
-
-Commit declaration.md and push the branch. **Do not open a PR at this stage** — the spec PR is opened at Stage 7. The cloud harness may auto-create one on first push; if so, leave it as-is (Stage 7 will update it).
+Commit `declaration.md`.
 
 ---
 
-### Stage 1 — Requirements
+## Stage 2 — Spec
 
-Spawn a sub-agent: **run the `/requirements` procedure.**
+Write `features/[feature-name]-[number]/spec.md`. It folds what were once separate requirements and design documents into one artifact, because a single capable pass writes them together. It has three parts:
 
-After it exits, read requirements.md: does the stability marker appear at the bottom? Push the branch.
+**Behavioral requirements** — in testable terms:
+- User stories with acceptance criteria — each names a user, a need, and the criteria that confirm it works.
+- Edge cases and failure modes — boundaries, and what happens when things go wrong.
+- Out of scope — what this feature explicitly does not address.
 
----
+**Design** — the architecture that satisfies those requirements:
+- Components, the seams between them, and the behavioral properties each must hold.
+- **Constraint discipline.** Every constraint must be behavioral — a property the user or system cares about ("requests time out within 5 s"), not a call signature, attribute name, or code shape. If a draft constraint names a library API detail, restate it as the property it protects and leave the implementation to `/build`. The single exception: when the call shape itself is the contract (a public interface this project exposes to callers), name it and say why.
+- **Pattern reuse.** If a component or attack surface reuses a pattern already in constitution.md's registry (existing auth module, Eviebot launchd template, an established DB access layer), say so explicitly. Only mark genuine, complete reuse — partial reuse is not reuse.
+- When a deploy step mutates an asynchronously-updating cloud resource (Lambda, CloudFront, RDS), sequence the wait/poll between dependent mutations and name any value shared between bootstrap and deploy scripts (e.g. the handler path) as an explicit contract.
 
-### Stage 2 — Architecture
+**Ground-truth check before drafting the design.** Identify the CLAUDE.md sections you intend to lean on — precedent repos, deployment shape, gateway/auth patterns, the User globals block — list them back to the user, and ask whether each is current. If CLAUDE.md names a precedent repo, attempt to read it; if access is scoped out, ask the user to confirm the precedent before assuming it. A wasted design built on a stale section costs more than one short exchange.
 
-Spawn a sub-agent: **run the `/architecture` procedure.**
-
-After it exits, read design.md and requirements.md: are both stability markers present? Does design flag requirements changes? Push the branch.
-
-**Loop routing:** If either stability marker is absent (and the gap is not marker-only — design didn't flip it because text actually needs changing), increment the req↔arch counter and return to Stage 1. If both are present, proceed to Stage 3.
-
----
-
-### Stage 3 — Adversarial review
-
-Pick the mode the `/adversarial` skill defines (fresh review vs. verification pass) based on the diff since the last adversarial-review.md, and name it in the spawn prompt.
-
-Spawn a sub-agent: **run the `/adversarial` procedure in [fresh review | verification pass] mode.**
-
-After it exits, read adversarial-review.md, then push the branch. Classify each open finding:
-
-- **Prescription feedback** (`## Prescription feedback` section in adversarial-review.md is non-empty) → return to Stage 2 without incrementing the adversarial counter. The architecture sub-agent will read the feedback and restate prescriptions as behavioral constraints. Do not also return to Stage 1 unless requirements changes are independently needed.
-- **Scope-level** (lens is "Scope drift", or finding surfaces declaration tension) → stop and ask the user
-- **Technical, HIGH or MEDIUM** → increment the adversarial-revision counter and return to Stage 1; the req/arch sub-agents will read adversarial-review.md and address the relevant findings
-- **Technical, LOW** → non-blocking; proceed to Stage 4
-- **No open findings and no prescription feedback** → proceed to Stage 4
+**Standards-creep check.** Standards in constitution.md apply by default, but when a thin feature would absorb a heavy cross-cutting set (e.g. full WCAG sign-off for a one-page admin tool), surface the tension rather than silently absorbing the cost. The user decides whether to absorb, scope down, or defer.
 
 ---
 
-### Stage 4 — Test generation
+## Stage 3 — Tests
 
-Spawn a sub-agent: **run the `/tests` procedure.**
+Check constitution.md's `## Testing` section. If it names a framework, use it. If empty, choose the framework that best fits the stack and any existing tests, surface the choice and run command to the user, confirm, then populate `## Testing`. This is a one-time decision per project.
 
-After it exits, push the branch. If the sub-agent surfaced an untestable requirement, stop and present the gap to the user — the resolution is to update requirements.md (re-entering the loop from Stage 1) before proceeding to Stage 5.
+Derive two categories of tests, both from `spec.md`:
+1. **Behavioral tests** — does it do what the requirements specify?
+2. **Seam tests** — do the design's seams hold? Timeouts fire at the right boundaries, errors map to the right taxonomy, interfaces between components behave as designed. Do not assert that a specific constructor was called with specific arguments, that a private attribute holds a specific value, or that an internal call signature matches the design — those test the implementation, not the seam. Rewrite any such candidate to assert the observable behavior instead.
 
----
+Tests that read a repo-relative file must resolve the path from the test file's own location (`Path(__file__).resolve().parents[N]` or the language equivalent), never an absolute sandbox path.
 
-### Stage 5 — DAG generation
+Tests written before `/build` implements against them are expected to fail (ImportError, skip, or red assertion) until the code exists — that is the point. The contract is that the suite, once green, means the feature is done.
 
-Spawn a sub-agent: **run the `/dag` procedure.**
+If a requirement cannot be tested as written, do not paper over it with a weak test. Surface the gap and fix it by revising `spec.md`, then continue.
 
-After it exits, read dag.md and verify.md and push the branch. If the sub-agent surfaced a sizing problem, a too-large warning, or a task with no test coverage, stop and present this to the user before proceeding to Stage 6.
-
----
-
-### Stage 6 — PM summary
-
-Write features/[feature-name]-[number]/spec-summary.md directly. By this point the orchestrator has read all the relevant committed artifacts and does not need a sub-agent.
-
-**Feature** — What it is and why it exists now. One paragraph from the feature declaration, written for a reader who hasn't seen the spec.
-
-**What it does** — Plain-language description of the core behaviors delivered. Derived from requirements but written for a product manager: no implementation detail, no technical jargon. Describes what a user or operator will experience.
-
-**Risks carried** — Any adversarial findings marked `acknowledged` or `deferred`, stated in product terms: what could go wrong and what decision was made about it. If none, state "No risks acknowledged."
-
-**Out of scope** — What this feature explicitly does not address, drawn from the feature declaration and requirements.
-
-**Build preview** — Number of waves, number of tasks, and the DAG's session-budget assessment. One sentence on whether the DAG fits comfortably in one build session or whether anything about it warrants attention.
-
-**Next step** — "Review and merge the spec PR, then start a new session and run `/build feature-name: [name]`. The build starts fresh from `main`, so the spec must be merged first."
-
-Commit spec-summary.md and push the branch.
+Write `features/[feature-name]-[number]/tests/`. Add a short **Coverage** section to `spec.md` mapping each requirement and each design seam to the test(s) that verify it, so the human can see the acceptance bar at a glance without reading the test files.
 
 ---
 
-### Stage 7 — Ensure the handoff PR
+## Stage 4 — Independent adversarial gate
 
-**Session model.** `/spec` typically runs in one session from declaration through DAG. `/build`, by contrast, *always* runs in a separate session: a re-cloned sandbox provisions a new branch off `main`. That means the spec artifacts must be merged to `main` before `/build` can begin. This PR is that merge gate.
+This is the one stage that must run in clean context. Spawn a fresh sub-agent (Agent tool, `general-purpose`) whose **only** job is to attack the spec and tests — not to build, not to defend, not to rewrite. A review folded into the pass that wrote the spec inherits that pass's blind spots no matter how capable the model is; an independent pass catches what the author cannot see itself missing. That is why this is a separate agent and not a self-review step.
 
-The cloud sandbox is ephemeral — the spec is only handed off to the next session via this PR.
+Spawn prompt, in substance:
 
-Push the branch one final time to ensure all commits are upstream. Then ensure exactly one handoff PR exists for this branch against `main` (use the GitHub MCP server). Check for an existing PR first (`mcp__github__list_pull_requests` for the branch):
+> You are an independent reviewer in clean context. Read constitution.md, declaration.md, `features/[feature-name]-[number]/declaration.md`, `features/[feature-name]-[number]/spec.md`, and every file in `features/[feature-name]-[number]/tests/`. Your only job is to find problems. Do not edit anything. Do not build. Zero findings is a valid outcome when the spec is sound — only surface a finding if you can name a concrete failure mode it would cause; drop generic concerns ("add more error handling", "think about scale").
+>
+> Review through these lenses:
+> - **Scope drift** — what has been added beyond the feature declaration, or beyond the project declaration?
+> - **Integrity** — do the documents contradict each other? Does the design implement the requirements? Do the tests actually verify the requirements, or do they assert implementation shape (constructor calls, private state, exact call signatures) instead of behavior? A test that locks in implementation detail is itself a finding.
+> - **Coverage** — what behaviors or edge cases are unspecified or untested? Is any requirement covered only by a weak test?
+> - **Security** — what attack surface does the design expose? Name the specific component and the requirement/design section where it lands; drop findings that only restate a pattern without a location. Honor `Reuses pattern:` markers by scoping those surfaces to HIGH severity only.
+> - **Standards compliance** — does the design respect the applicable items in constitution.md's standards registry?
+> - **Failure modes** — what breaks silently vs. visibly? What recovery is missing?
+> - **HIG-native (Apple platforms only).** Run only if declaration.md's `## Platform` names an Apple platform. For each custom-built control, gesture, navigation pattern, settings/sharing surface, or system-integration touchpoint, ask whether Apple's HIG or a standard UIKit/AppKit/SwiftUI component already solves it. If yes, file a finding naming the custom thing, the platform pattern it duplicates, and what is lost by deferring — default recommendation is to delete the custom path. Skip entirely on web/CLI/server.
+>
+> Return your findings as a list. For each: a severity (HIGH / MEDIUM / LOW), the lens, the concrete failure mode, and whether it lands in the spec or the tests. A LOW finding must name a specific location or it is dropped. If nothing survives the bar, say so.
 
-- **If a PR already exists** (either auto-created by the harness on first push, or opened by an earlier `/feature` run): update it (`mcp__github__update_pull_request`) to serve as the spec handoff. Do not open a second PR.
-- **If none exists:** open one (`mcp__github__create_pull_request`).
+The gate does not loop. It runs once against the drafted spec and tests and returns its findings to the orchestrator.
 
-Either way, the PR should end up as:
+---
 
-- Title: `spec: [feature-name]`
-- Body: include spec-summary.md content plus a one-line note that the PR is the handoff to the next session for `/build`, and that it must be merged to `main` before `/build` starts.
-- Ready for review (not draft) — flip it from draft if it was opened as one.
-- No reviewers or assignees, per CLAUDE.md (the owner is the PR author).
+## Resolving the gate and finalizing
 
-Do not merge the PR. Present the PR URL to the user and tell them to review and merge it, then start a new session and run `/build` from `main`. The pre-build pipeline is complete.
+Present the gate's findings to the user. These are the **only** stops `/spec` makes, alongside the product-judgment stops below. For each finding the user decides: **fix** it (you edit `spec.md` and/or `tests/` directly — you are the author now, not the gate), **acknowledge** the risk, or **proceed**. The author may fix as many findings as the user directs in this single resolution pass; there is no second gate run and no bounce-back loop.
+
+Record the outcome in an `## Adversarial gate` section at the bottom of `spec.md`: the mode (clean-context gate), what was found, and the disposition of each finding (fixed / acknowledged / proceeded). For every finding the user **acknowledges**, append one row to constitution.md's `## Acknowledged risks` table: feature name, severity (the *unmitigated* severity — an acknowledged HIGH stays HIGH), one-line risk, one-line rationale, mitigation (or "none"). This is the project's cumulative-risk surface and it must stay honest.
+
+### When to stop
+
+Stop and ask the user — using the exact product or scope question that needs judgment, not a list of technical options — when:
+- The gate surfaces findings to disposition (above).
+- The spec drifts in scope from the feature declaration, or the feature tensions with the project or feature declaration. Declaration tension usually means the feature is mis-scoped.
+- A risk needs an explicit acknowledgment only the owner can make.
+
+Everything else — writing the spec, writing tests, fixing findings the user has told you to fix — proceeds without pausing.
+
+### Finalize
+
+Once the gate is resolved and any product stops are settled:
+1. Commit `spec.md`, the test files, `declaration.md`, and (if changed) constitution.md.
+2. Push the branch (`git push -u origin <current-branch>`).
+3. Ensure exactly one handoff PR exists against `main` (check `mcp__github__list_pull_requests` for the branch first; the cloud harness may have auto-created one on first push — update it rather than opening a second). The PR is the handoff: `/build` always runs in a separate session off a fresh `main`, so the spec must be merged before `/build` can begin.
+   - Title: `spec: [feature-name]`
+   - Body: a plain-language summary of what the feature does (written for someone who hasn't read the spec), the acknowledged risks in product terms, what is out of scope, and a closing line — "Merge this, then start a new session and run `/build feature-name: [name]` from `main`."
+   - Ready for review (not draft). No reviewers or assignees (the owner is the PR author).
+
+Do not merge. Give the user the PR URL and the next step.
+
+Exit condition: `spec.md` and `tests/` exist, the adversarial gate has run in clean context and its findings are dispositioned, acknowledged risks are in constitution.md, and a handoff PR is open against `main`.
