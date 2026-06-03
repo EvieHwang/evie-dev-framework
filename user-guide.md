@@ -117,7 +117,7 @@ After cloning the template:
 Fetches the latest framework-owned files and writes them into the current project, then opens a PR.
 
 - **Replaced wholesale** (projects have no reason to customize these): `FRAMEWORK_VERSION`, `user-guide.md`, `features/README.md`, `.claude/commands/*.md`.
-- **Never replaced wholesale** (mix framework template sections with project-specific content): `CLAUDE.md` and `constitution.md`. `/upgrade` compares the framework-owned sections and surfaces differences as a manual review checklist in the PR body.
+- **Never replaced wholesale** (mix framework template sections with project-specific content): `CLAUDE.md` and `constitution.md`. `/upgrade` works these section by section — it semantically merges each framework-owned section (preserving any project-specific lines you added) and proposes deletions for sections the framework has retired, then prompts you per edit in-session (apply / skip / show full). Only the edits you approve are written; project-specific sections are never touched. The PR body lists which edits were applied vs. skipped.
 
 `FRAMEWORK_VERSION` holds the date the framework was last fetched; `/upgrade` reads it to detect whether an upgrade is needed. To force a same-day re-upgrade, delete the file locally first.
 

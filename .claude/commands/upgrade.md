@@ -1,5 +1,5 @@
 ---
-description: Upgrade a downstream project's framework-owned files to the latest version from evie-dev-framework. Replaces all skill commands, user-guide.md, features/README.md, and FRAMEWORK_VERSION wholesale; surfaces CLAUDE.md and constitution.md structural changes as a manual review checklist in the PR.
+description: Upgrade a downstream project's framework-owned files to the latest version from evie-dev-framework. Replaces all skill commands, user-guide.md, features/README.md, and FRAMEWORK_VERSION wholesale; semantically merges CLAUDE.md and constitution.md framework-owned sections behind per-edit in-session approval, preserving project-specific content.
 ---
 
 Upgrade this project's framework files to the latest version from `EvieHwang/evie-dev-framework`.
@@ -51,45 +51,54 @@ If any `curl` call fails, stop and report which file failed before making any co
 
 **Removing stale commands.** A project upgrading across the V2 boundary may still have the V1 command files (`requirements.md`, `architecture.md`, `adversarial.md`, `tests.md`, `dag.md`, `next.md`) under `.claude/commands/`. If any exist, `git rm` them — they were collapsed into `/spec` and `/build` and a lingering file would shadow the new flow. Note in the PR which were removed.
 
-## Structural diff — CLAUDE.md and constitution.md
+## Structural merge — CLAUDE.md and constitution.md
 
-These files mix framework template sections with project-specific content and are **never replaced wholesale**. Instead, compare specific sections and surface differences for manual review in the PR body.
+These files mix framework-template sections with project-specific content (project name, run/test/deps block, deployment target, the user-globals block at the bottom of `CLAUDE.md`; the decision log and acknowledged-risks table in `constitution.md`), so they are **never replaced wholesale**. Instead, work **section by section** and apply each framework-owned change as a separate, individually approved edit. Project-specific sections are never touched.
 
-Fetch the framework versions:
+Fetch the framework versions once:
 ```bash
 curl -sf https://raw.githubusercontent.com/EvieHwang/evie-dev-framework/main/CLAUDE.md
 curl -sf https://raw.githubusercontent.com/EvieHwang/evie-dev-framework/main/constitution.md
 ```
 
-**CLAUDE.md** — compare the text of each of these sections (from the heading to the next `##` heading) between the framework version and the local file:
-- `## Repo map`
-- `## Development environment`
-- `## Secrets`
+There are two classes of edit. Build the full list of proposed edits across both classes first, then walk them one at a time through the approval step below.
 
-**constitution.md** — compare:
-- `## Standards`
+### Class 1 — framework-owned section merges
 
-For each section that differs, record both versions (labeled `Framework:` and `Local:`) in the PR body under `## Manual review checklist`. If all compared sections are identical, write "No structural changes to review."
+For each section below, take the text from the section heading up to the next `##` heading and compare framework vs. local:
 
-**Removed sections.** The structural diff above surfaces sections that *changed*; it does not catch sections the framework has *deleted* but a downstream repo still carries in its always-loaded files. Check for these explicitly, because a lingering one keeps stale rules and references in context:
-- `CLAUDE.md` — if it still contains a `## Build flow note` section, flag it for deletion (the DAG / `state.md` / `verify.md` build flow it describes no longer exists).
-- `constitution.md` — if it still contains a `## Artifact formats` section (the `state.md` state-file spec), flag it for deletion.
+**CLAUDE.md:** `## Repo map`, `## Development environment`, `## Secrets`
+**constitution.md:** `## Standards`
 
-For each removed section still present locally, add an entry under `## Manual review checklist` recommending its deletion and naming what made it obsolete. Do not delete it yourself — these files are never modified by `/upgrade`; the user removes it during manual review.
+If a section is byte-identical, skip it. If it differs, produce a **semantic merge**, not a blind overwrite: adopt the framework's new structure, wording, and any new directives, while **preserving any project-specific lines the local copy added** to that section (e.g. repo-specific entries under Repo map, project-added standards). When in doubt about whether a local line is a project addition or stale framework text, keep it and call it out in the approval prompt so the user decides.
 
-Do not modify `CLAUDE.md` or `constitution.md`.
+### Class 2 — stale-section deletions
+
+The framework has *deleted* some sections a downstream repo may still carry in its always-loaded files; a lingering one keeps dead rules in context. Propose a deletion for each that is still present locally:
+- `CLAUDE.md` — `## Build flow note` (the DAG / `state.md` / `verify.md` build flow it describes no longer exists).
+- `constitution.md` — `## Artifact formats` (the `state.md` state-file spec).
+
+These are pure removals — no project content lives in them.
+
+### Approval step — one prompt per edit
+
+Present each proposed edit individually and apply only what the user approves. Use the `AskUserQuestion` tool, one question per edit, with options **Apply**, **Skip**, and **Show full** (when "Show full" is chosen, print the complete before/after for that section, then ask again). The question must include enough of the diff that the user can decide without scrolling back — for a merge, show the local section and the proposed merged result; for a deletion, show the section being removed and name what made it obsolete.
+
+Apply each approved edit to the file with the `Edit` tool immediately after its approval. Leave skipped edits untouched. If no sections differ and no stale sections are present, report "No CLAUDE.md / constitution.md changes to apply." and make no edits to these files.
+
+Keep a record of which edits were **applied** and which were **skipped** — this goes in the PR body.
 
 ## Commit
 
-Stage only the framework-owned files listed above. Do not stage `CLAUDE.md`, `constitution.md`, or any project-specific files.
+Stage the framework-owned files listed above, plus `CLAUDE.md` and/or `constitution.md` **only if** the structural-merge step applied at least one approved edit to them. Never stage other project-specific files (`declaration.md`, feature artifacts, the project's run/test/deps or deployment blocks). If the user skipped every CLAUDE.md / constitution.md edit, leave both files unstaged.
 
 ```
 chore: upgrade framework to <to_version>
 
 Updated from <from_version>. Skill commands, user-guide.md,
 features/README.md, and FRAMEWORK_VERSION replaced wholesale.
-See PR for CLAUDE.md / constitution.md structural changes
-requiring manual review.
+CLAUDE.md / constitution.md framework-owned sections merged with
+approval (see PR for which edits were applied vs. skipped).
 ```
 
 Push the branch: `git push -u origin <current-branch>`.
@@ -107,14 +116,23 @@ Open a pull request against `main` using `mcp__github__create_pull_request`:
 `.claude/commands/*.md`, `user-guide.md`, `features/README.md`, `FRAMEWORK_VERSION`
 upgraded from `<from_version>` to `<to_version>`.
 
-## Manual review checklist
+## CLAUDE.md / constitution.md edits
 
-<structural diff output as described above>
+**Applied (approved in-session):**
+<for each applied edit: section name, and merge vs. deletion>
+
+**Skipped (declined in-session):**
+<for each skipped edit: section name, and what it would have changed — so the
+reviewer can revisit it manually if desired>
+
+If no sections differed, write "No structural changes — both files already current."
 
 ## Verification
 
-Run the test suite to confirm no regressions. Feature artifacts and project-specific
-configuration (CLAUDE.md, constitution.md project sections, declaration.md) are unchanged.
+Run the test suite to confirm no regressions. Project-specific configuration
+(CLAUDE.md / constitution.md project sections, run/test/deps, deployment target,
+declaration.md, feature artifacts) is unchanged — only the approved framework-owned
+sections above were touched.
 ```
 
 - Ready for review (not draft). No reviewers or assignees, per CLAUDE.md (the owner is the PR author).
