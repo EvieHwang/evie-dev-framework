@@ -17,11 +17,32 @@ The one place the framework still inserts itself into execution is the **adversa
 
 ---
 
-## Choosing your approach
+## The mainline
 
-**Quick change — `/patch`.** Bug fixes, tweaks, polish, small features where the intent is clear and the work fits one session. No feature artifacts; the PR body is the documentation. Use when you know what correct looks like and the change is contained.
+Most work follows one path:
 
-**Feature build — `/spec` → `/build`.** Real features built from a written spec and a test suite. `/spec` produces both and runs them past an independent adversarial gate; `/build`, in a later session, implements against the tests until they pass. Use when the work is deliberate, spans multiple components, or carries hard-to-reverse decisions.
+**`/setup` → `/spec` → `/build`.**
+
+1. **`/setup`** — run once on a fresh clone. Coached fill of `CLAUDE.md` and `declaration.md`, so the project has a statement of intent and an operational map before any feature work begins. (It runs the project declaration as its second phase — see `/declaration` under the utilities.)
+2. **`/spec`** — after you've talked through the next feature with Claude, `/spec` writes the feature's `spec.md` and its executable test suite, runs them past an independent adversarial gate, and opens a handoff PR. It produces the feature declaration *inline* from that conversation, so you don't author one separately.
+3. **`/build`** — in a fresh session after the spec PR merges, implements against the tests until every suite passes, then opens a PR.
+
+That's the whole standard loop: `/setup` once at the start, then `/spec` → merge → `/build` repeated per feature.
+
+## The utilities
+
+Everything else is a tool you reach for in a specific situation — not a step in the mainline.
+
+**Scope-clarification passes — when intent is fuzzy.** These are the two halves of the mainline's scoping work, pulled out to run on their own. Each produces a declaration and stops; each is otherwise absorbed into a mainline command, so you only call it independently when the scope is genuinely unclear.
+
+- **`/feature`** — *feature-level.* Run it before `/spec` when a feature's scope is ambiguous and you want a coached scoping pass. It also carries the walking-skeleton coaching for a project's **first** feature. Skip it when the scope is already clear — `/spec` writes the declaration itself.
+- **`/declaration`** — *project-level.* Run it when the project's intent, Shape, or Roadmap shifts as you learn, and you want to revise `declaration.md` deliberately. `/setup` runs this as its second phase on a fresh clone, so you only invoke it on its own *later*, to update what setup first established.
+
+**`/patch`** — a small bounded change (bug fix, tweak, polish, contained feature) where the intent is clear and the work fits one session. No feature artifacts; the PR body is the documentation. Use when you know what correct looks like and the change is contained.
+
+**`/retro`** — after a build, a coached retro that closes the learning loop: it proposes changes to `constitution.md`, `CLAUDE.md`, and the skill prompts based on what the build taught.
+
+**`/upgrade`** — pull the latest framework-owned files into the project.
 
 ---
 
