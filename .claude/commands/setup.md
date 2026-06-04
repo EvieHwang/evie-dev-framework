@@ -21,7 +21,7 @@ The four fields, in order:
 1. **Project name** — short, human-readable. Used to replace `# [Project Name]` in CLAUDE.md and as the `#` heading in the new README.
 2. **One-line description** — what the app is, in a sentence. Becomes the README subtitle and a comment line in CLAUDE.md.
 3. **Stack / runtime** — pick the run/test/deps block. Offer the common shapes (Node + pnpm/npm, Python + pyproject, Swift/Xcode, static site, "skip — fill later"). If the user names a stack not on the list, accept it and synthesize a reasonable block.
-4. **Deployment target** — Eviebot (self-hosted Mac mini, launchd), AWS (us-east-1, account 070840362692), Apple/Xcode (App Store / TestFlight), or "none yet". Pull the canonical coordinates from CLAUDE.md's `## User globals` block when writing Eviebot/AWS targets.
+4. **Deployment target** — Fly.io (primary; `fly.toml`, `flyctl deploy` via GitHub Actions), AWS (secondary; us-east-1, account 070840362692), Apple/Xcode (App Store / TestFlight), or "none yet". Pull the canonical coordinates from CLAUDE.md's `## User globals` block when writing Fly.io/AWS targets.
 
 Hold answers at the level the template expects — names and commands, not architecture. If the user starts describing features or behavior, note it and redirect: that will come out in the declaration conversation that follows.
 
@@ -41,7 +41,7 @@ Confirm the four answers back to the user before writing anything.
 - Replace `# [Project Name]` with `# <Project name>`.
 - Replace the bracketed one-line-description placeholder with the user's one-liner.
 - Under `## Run, test, deps`: replace the instruction text with a single uncommented block for the chosen stack (install, run/dev, test commands). If the user picked "skip", leave a single-line TODO comment.
-- Under `## Deployment target`: replace the instruction text with a single uncommented block for the chosen target. For Eviebot: reference `/Users/eviebot/services/<repo-name>/` and `launchd`. For AWS: reference account `070840362692`, region `us-east-1`, secrets from the repo's GitHub Actions secrets. For Apple/Xcode: reference Xcode build + signing. For "none yet": leave a single-line TODO.
+- Under `## Deployment target`: replace the instruction text with a single uncommented block for the chosen target. For Fly.io: reference `fly.toml` and `flyctl deploy` via GitHub Actions (`FLY_API_TOKEN`). For AWS: reference account `070840362692`, region `us-east-1`, secrets from the repo's GitHub Actions secrets. For Apple/Xcode: reference Xcode build + signing. For "none yet": leave a single-line TODO.
 
 Do not modify `declaration.md`, `constitution.md`, or anything under `features/`.
 

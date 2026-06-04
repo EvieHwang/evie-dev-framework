@@ -23,7 +23,7 @@ a decision, not made silently.
 - The spec is the contract. Its requirements are never modified during implementation; if a requirement is wrong, `/build` stops and kicks back to `/spec` rather than patching it mid-build.
 - No Docker for local development unless the project has multi-service dependencies that genuinely require it.
 - All deployments run through GitHub Actions, triggered by push to `main`.
-- Prefer self-hosted runners (Eviebot) over SSH-based deploy steps.
+- Prefer first-class deploy tooling (`flyctl deploy` from GitHub Actions) over SSH-based deploy steps.
 
 [Add app-specific principles below as they are decided.]
 
@@ -31,7 +31,7 @@ a decision, not made silently.
 - **Frontend stack:** React + TypeScript + Tailwind + shadcn/ui. Vanilla JS is acceptable only for stateless single-page tools.
 - **UI aesthetic:** information-dense, 14px base, tight line heights, dark mode as a first-class surface.
 - **UX checklist:** apply Nielsen's 10 heuristics as a general sanity-check on any interface; Apple HIG (see Standards) is the authoritative reference for platform decisions.
-- **Python service layout:** `pyproject.toml` with a console-script entry point (not `requirements.txt`); deployment plists live in `deploy/` (not `launchd/`).
+- **Python service layout:** `pyproject.toml` with a console-script entry point (not `requirements.txt`); Fly deployment config (`fly.toml`, and a `Dockerfile` if the build needs one) lives at the repo root.
 
 [Add app-specific patterns below as they are established.]
 
