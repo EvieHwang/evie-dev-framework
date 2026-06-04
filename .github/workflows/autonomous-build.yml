@@ -1,0 +1,83 @@
+# .github/workflows/autonomous-build.yml
+#
+# Autonomous build. Fires when a spec PR is merged to main AND the PR carries
+# the `autonomous-build` label. This is the opt-in switch: an unlabeled spec
+# merge does nothing, so autonomy is a per-feature choice, never the default.
+#
+# It runs /build headlessly, opens a `build:` PR for you to review, and — when
+# it hits something it cannot or must not resolve — opens a labeled issue and
+# stops instead of spinning or faking a green suite. That issue is your
+# notification channel: in async there is no session watching, so the stop has
+# to reach you some other way.
+name: autonomous-build
+
+on:
+  pull_request:
+    types: [closed]
+
+# One build per feature at a time. Never stack runs on the same spec.
+concurrency:
+  group: autonomous-build-${{ github.event.pull_request.title }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  build:
+    # Only on a real merge of a *labeled* spec PR.
+    if: >
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.title, 'spec:') &&
+      contains(github.event.pull_request.labels.*.name, 'autonomous-build')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45          # wall-clock fence
+    steps:
+      - name: Check out fresh main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      # ── Set up the project toolchain so the agent can run the suite ──
+      # Uncomment / replace to match the stack in constitution.md ## Testing.
+      # - uses: actions/setup-python@v5
+      #   with: { python-version: '3.11' }
+      # - uses: pnpm/action-setup@v4
+      #   with: { version: 9 }
+      # - uses: actions/setup-node@v4
+      #   with: { node-version: 20, cache: 'pnpm' }
+
+      - name: Build the feature
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            A spec PR just merged to main. Its title was:
+              "${{ github.event.pull_request.title }}"
+            The feature name is the text after "spec: ".
+
+            Run the /build procedure in .claude/commands/build.md for that feature,
+            exactly as if a human had run `/build` in an interactive session. Read
+            CLAUDE.md and constitution.md first. Confirm the feature folder under
+            features/ by checking which folder this merge touched. Build to a fully
+            green suite across EVERY runner in constitution.md's ## Testing section,
+            then open a PR titled "build: <feature-name>" using build.md's PR format.
+
+            ESCALATION — do not spin, and never fake green. Instead of opening the
+            build PR, open a GitHub issue and STOP if any of these is true:
+              - a required secret/credential is missing, or a test/deploy needs an
+                access change you cannot and must not make yourself;
+              - build.md tells you to kick back to /spec because a requirement is
+                wrong (not merely hard) — requirements are never edited here;
+              - the suite will not stabilize (flakiness, environment) after a
+                bounded number of honest attempts.
+            The issue title starts with "build-blocked:" and names the feature. The
+            body states which case fired, the concrete evidence (failing test, the
+            exact missing secret name, the wrong requirement), and the single
+            decision you need from the owner. Label it "build-blocked". Then stop.
+          claude_args: |
+            --model claude-opus-4-8
+            --max-turns 80
