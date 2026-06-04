@@ -35,6 +35,11 @@ a decision, not made silently.
 
 [Add app-specific patterns below as they are established.]
 
+## Spec-authoring lessons
+*Recurring spec/test-authoring mistakes learned from real builds, routed here by `/retro` from `build-deviations.md` so the next `/spec` doesn't repeat them. `/spec` reads this section before drafting. Keep each entry concrete: the mistake, and the rule that prevents it, tagged with the feature it came from. Populated by `/retro`.*
+
+- [e.g. "Don't assert the exact JWT algorithm in a test — assert that an expired/forged token is rejected. (auth-1)"]
+
 ## Quality gates
 - All tests pass — and CI runs the same build the deploy runs. If the test runner doesn't type-check/compile (Vitest, esbuild, isolatedModules), CI also runs the production build (`tsc` / `pnpm build` / `mypy` / `go build`).
 - `README.md` and `CLAUDE.md` exist and are current.
@@ -43,8 +48,11 @@ a decision, not made silently.
 [Add app-specific gates below as they are established.]
 
 ## Testing
-Framework: [populated by /spec on first use]
-Run: `[command — populated by /spec on first use]`
+*One block per test runner. A polyglot repo (e.g. a Python API plus a JS/TS frontend) has more than one — list each, because the green bar `/build` must hit is **every** runner passing. `Test root` records how this runner discovers the per-feature suites under `features/*/tests/` — the one-time wiring `/spec` establishes so feature tests are executable without per-feature path hacks (see `/spec` → "Multi-runner repos"). A single-runner project has just one block. Populated by `/spec` on first use.*
+
+- **Runner:** [name, e.g. pytest]
+  **Run:** `[command]`
+  **Test root:** [how this runner finds feature tests — e.g. a `pytest.ini`/`pyproject` `testpaths`, a Vitest `include` glob, an import alias — or note that feature tests live in `features/*/tests/<runner>/`]
 
 ## Out of scope
 [List what this codebase explicitly does not do. Populated per app.]
