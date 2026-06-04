@@ -2,9 +2,19 @@
 description: Upgrade a downstream project's framework-owned files to the latest version from evie-dev-framework. Replaces all skill commands, user-guide.md, features/README.md, and FRAMEWORK_VERSION wholesale; semantically merges CLAUDE.md and constitution.md framework-owned sections behind per-edit in-session approval, preserving project-specific content.
 ---
 
-Upgrade this project's framework files to the latest version from `EvieHwang/evie-dev-framework`.
+Upgrade this project's framework files to the latest version from the canonical framework repo.
 
-All framework files are fetched using `curl` via the Bash tool against raw GitHub URLs (`https://raw.githubusercontent.com/EvieHwang/evie-dev-framework/main/<path>`). Do not use `mcp__github__get_file_contents` for the framework repo (MCP is scoped to the current project only) and do not use WebFetch (blocked by sandbox network policy).
+## Source of truth
+
+The framework source repo is declared once here and used for **every** fetch below — never inline another repo slug:
+
+```
+SOURCE_REPO = EvieHwang/evie-dev-framework-0526
+```
+
+`evie-dev-framework-0526` is the authoritative, actively-developed framework repo. The non-suffixed `evie-dev-framework` is an older snapshot — do not fetch from it. If this constant ever needs to change, change it here only; the single declaration is what keeps the canonical-vs-snapshot split from drifting across the seven fetches below.
+
+All framework files are fetched using `curl` via the Bash tool against raw GitHub URLs (`https://raw.githubusercontent.com/<SOURCE_REPO>/main/<path>`, i.e. `https://raw.githubusercontent.com/EvieHwang/evie-dev-framework-0526/main/<path>`). Do not use `mcp__github__get_file_contents` for the framework repo (MCP is scoped to the current project only) and do not use WebFetch (blocked by sandbox network policy).
 
 ## Pre-flight checks
 
@@ -18,7 +28,7 @@ Run these before touching any files. Stop and report if any check fails.
 
 4. **Target version.** Run:
    ```bash
-   curl -sf https://raw.githubusercontent.com/EvieHwang/evie-dev-framework/main/FRAMEWORK_VERSION
+   curl -sf https://raw.githubusercontent.com/EvieHwang/evie-dev-framework-0526/main/FRAMEWORK_VERSION
    ```
    Strip whitespace from the output. Record as `to_version`. If curl fails (non-zero exit), stop and report the error.
 
@@ -28,7 +38,7 @@ Run these before touching any files. Stop and report if any check fails.
 
 For each file in the list below, run:
 ```bash
-curl -sf https://raw.githubusercontent.com/EvieHwang/evie-dev-framework/main/<path> -o <path>
+curl -sf https://raw.githubusercontent.com/EvieHwang/evie-dev-framework-0526/main/<path> -o <path>
 ```
 
 If the file does not yet exist locally, create any missing parent directories first (`mkdir -p`). Write the fetched content verbatim — do not merge or selectively apply.
@@ -57,8 +67,8 @@ These files mix framework-template sections with project-specific content (proje
 
 Fetch the framework versions once:
 ```bash
-curl -sf https://raw.githubusercontent.com/EvieHwang/evie-dev-framework/main/CLAUDE.md
-curl -sf https://raw.githubusercontent.com/EvieHwang/evie-dev-framework/main/constitution.md
+curl -sf https://raw.githubusercontent.com/EvieHwang/evie-dev-framework-0526/main/CLAUDE.md
+curl -sf https://raw.githubusercontent.com/EvieHwang/evie-dev-framework-0526/main/constitution.md
 ```
 
 There are two classes of edit. Build the full list of proposed edits across both classes first, then walk them one at a time through the approval step below.
