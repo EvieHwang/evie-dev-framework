@@ -78,9 +78,9 @@ There are two classes of edit. Build the full list of proposed edits across both
 For each section below, take the text from the section heading up to the next `##` heading and compare framework vs. local:
 
 **CLAUDE.md:** `## Repo map`, `## Development environment`, `## Secrets`
-**constitution.md:** `## Standards`
+**constitution.md:** `## Standards`, `## Spec-authoring lessons`
 
-If a section is byte-identical, skip it. If it differs, produce a **semantic merge**, not a blind overwrite: adopt the framework's new structure, wording, and any new directives, while **preserving any project-specific lines the local copy added** to that section (e.g. repo-specific entries under Repo map, project-added standards). When in doubt about whether a local line is a project addition or stale framework text, keep it and call it out in the approval prompt so the user decides.
+If a section is byte-identical, skip it. **If a section is absent locally** — one the framework has newly introduced (e.g. `## Spec-authoring lessons`) — propose adding the framework version verbatim at the position it occupies in the framework file, as its own approval-gated edit. If it differs, produce a **semantic merge**, not a blind overwrite: adopt the framework's new structure, wording, and any new directives, while **preserving any project-specific lines the local copy added** to that section (e.g. repo-specific entries under Repo map, project-added standards, accumulated spec-authoring lessons). When in doubt about whether a local line is a project addition or stale framework text, keep it and call it out in the approval prompt so the user decides.
 
 ### Class 2 — stale-section deletions
 
