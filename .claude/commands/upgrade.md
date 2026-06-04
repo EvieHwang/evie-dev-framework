@@ -4,6 +4,8 @@ description: Upgrade a downstream project's framework-owned files to the latest 
 
 Upgrade this project's framework files to the latest version from the canonical framework repo.
 
+**Owner-decision stops notify.** Nothing here adds a stop — this command stops only where it already says to and proceeds autonomously everywhere else. But *when* it does stop for a decision or confirmation only the owner can give, raise it through the `AskUserQuestion` tool rather than ending the turn with trailing prose: in a cloud/web/mobile session the question is what notifies the owner that the run is waiting on them. (The per-edit approval step below already does this.) Phrase it as the real decision and keep "Other" open for a freeform reply. This changes how a stop surfaces, never whether one happens.
+
 ## Source of truth
 
 The framework source repo is declared once here and used for **every** fetch below — never inline another repo slug:

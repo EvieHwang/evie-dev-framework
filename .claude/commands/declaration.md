@@ -4,6 +4,8 @@ description: Refines or extends the project-level declaration.md on an existing 
 
 Read the current `declaration.md` before starting.
 
+**Owner-decision stops notify.** Nothing here adds a stop — this command stops only where it already says to and proceeds autonomously everywhere else. But *when* it does stop for a decision or confirmation only the owner can give, raise it through the `AskUserQuestion` tool rather than ending the turn with trailing prose: in a cloud/web/mobile session the question is what notifies the owner that the run is waiting on them. Phrase it as the real decision and keep "Other" open for a freeform reply. This changes how a stop surfaces, never whether one happens.
+
 If `declaration.md` does not exist or contains only template placeholders, this is a new project — use `/setup` instead, which combines operational setup and the initial declaration in one session.
 
 If `declaration.md` is populated, ask the user what they want to revisit:

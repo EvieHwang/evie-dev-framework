@@ -8,6 +8,8 @@ Before starting, read `CLAUDE.md`, `README.md`, `declaration.md`, and `user-guid
 
 Verify the working branch matches `claude/<short-task-name>-<suffix>` (the sandbox provisions it). If not, surface the discrepancy and stop.
 
+**Owner-decision stops notify.** Nothing here adds a stop — this command stops only where it already says to and proceeds autonomously everywhere else. But *when* it does stop for a decision or confirmation only the owner can give, raise it through the `AskUserQuestion` tool rather than ending the turn with trailing prose: in a cloud/web/mobile session the question is what notifies the owner that the run is waiting on them. Phrase it as the real decision and keep "Other" open for a freeform reply. This changes how a stop surfaces, never whether one happens.
+
 ---
 
 ## Phase 1 — Operational setup
