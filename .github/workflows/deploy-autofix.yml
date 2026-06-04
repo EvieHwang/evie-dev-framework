@@ -1,0 +1,71 @@
+# .github/workflows/deploy-autofix.yml
+#
+# The reality-contact loop. "Done" means a healthy deploy, not just green tests,
+# and the deploy is where the real world bites. When the deploy workflow fails,
+# this hands a fresh agent the logs + flyctl and asks it to diagnose and fix.
+#
+# Two deliberate safety properties:
+#  1. It opens a *fix PR* rather than pushing to main, so the redeploy is gated
+#     on your merge — which both breaks any fix→deploy→fix loop and keeps you in
+#     the loop on changes that touch the live system (the riskiest autonomy).
+#  2. A hard fence: read logs and push code, yes; touch secrets or access, no.
+#     A missing-secret failure is exactly the case that SHOULD bounce to you.
+#
+# Enable this one *after* autonomous-build has proven itself. It's the part most
+# likely to misbehave, so it gets the tightest leash.
+name: deploy-autofix
+
+on:
+  workflow_run:
+    workflows: ["deploy"]        # <-- FILL IN: the exact name: of your deploy workflow
+    types: [completed]
+
+concurrency:
+  group: deploy-autofix
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  autofix:
+    if: github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Install flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Diagnose and fix the failing deploy
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            The deploy workflow just failed on main. Diagnose the cause and fix it.
+
+            You have flyctl and FLY_API_TOKEN — use `flyctl logs`, `flyctl status`,
+            and the failed run's logs. Apply CLAUDE.md's heuristic: if two code-level
+            fixes don't move the symptom, the cause is environmental (machine config,
+            secrets, health checks), not the code. Open a PR titled
+            "fix: deploy <short-cause>" with the fix and a one-paragraph diagnosis.
+
+            HARD FENCE — read logs and push code only. Do NOT set or rotate secrets,
+            change access or permissions, or alter Fly scaling/billing. If the cause
+            is a missing/incorrect secret or any access change, STOP and open an issue
+            titled "deploy-blocked: <cause>", label "deploy-blocked", stating the exact
+            secret or change needed and nothing more. Do the same if the failure
+            persists after a bounded number of honest attempts. Before starting, check
+            for an existing open "deploy-blocked" issue for this cause; if one exists,
+            stop rather than duplicate it.
+          claude_args: |
+            --model claude-opus-4-8
+            --max-turns 40
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
