@@ -22,7 +22,7 @@ Development runs in Claude Code cloud sandboxes attached to this GitHub repo.
 - The container is ephemeral and re-cloned each session. Anything not committed and pushed is lost.
 - No `~/.claude/CLAUDE.md` exists in the sandbox — user-global preferences are carried at the bottom of this file.
 - GitHub access is via the GitHub MCP server (tools prefixed `mcp__github__`). The `gh` CLI is not available.
-- **Cloud vs. local for deployment debugging.** Use the cloud session for code-level work; use a local Claude Code session for runtime issues on Eviebot (service not starting, launchd state, live logs, injected env vars) where it can observe the running environment directly. Switch signal: two code-level fixes that should have moved the symptom but didn't usually means the problem is environmental, not in the code.
+- **Runtime debugging.** Deployment runs on Fly.io, which is remotely observable from the cloud session — use `flyctl logs`, `flyctl status`, and `flyctl ssh console` to inspect a running app (service not starting, crash loops, injected env vars) without leaving Claude Code. Switch signal: two code-level fixes that should have moved the symptom but didn't usually means the problem is environmental (machine config, secrets, health checks), not in the code.
 - Development branch pattern: `claude/<short-task-name>-<suffix>`. The sandbox provisions this branch per session — commit to it, never create a new one. Open a PR to `main` when work is complete. Do not add reviewers or assignees — the repo owner is the sole maintainer and the PR author, so GitHub rejects requesting their review and there is no clean assignee path in this setup.
 - **Never rewrite published history.** If a commit is already on the remote default branch — for example a merge commit GitHub created when a PR landed — do not `rebase`, `--reset-author`, or force-push over it; branch from it and move forward. A git stop-hook nudge to amend authorship or rebase applies to your own un-pushed local commits, not to anything already on `main`; following it literally against pushed history would rewrite the shared branch.
 
@@ -30,7 +30,7 @@ Development runs in Claude Code cloud sandboxes attached to this GitHub repo.
 Pick the block that matches your project's stack. Uncomment it and delete the others. The header on each block describes when to use it.
 
 <!--
-### Python service (a backend program or MCP server, typically deployed to Eviebot)
+### Python service (a backend program or MCP server, typically deployed to Fly.io)
 - Install: `python3.11 -m venv .venv && .venv/bin/pip install -e .`
   Creates an isolated Python environment in `.venv/` (a hidden folder) and installs this project into it. The `-e` flag means "editable" — code changes take effect without reinstalling.
 - Run locally: `.venv/bin/<script-name>` where `<script-name>` is defined in `pyproject.toml` under `[project.scripts]`.
@@ -69,21 +69,16 @@ Pick the block that matches your project's stack. Uncomment it and delete the ot
 Pick one. Uncomment the matching block and delete the others.
 
 <!--
-### Eviebot (headless always-on Mac mini)
-- Service path: `/Users/eviebot/services/<repo-name>/` (must exist before first deploy)
-- Venv: `.venv/` inside the service path
-- Process management: `launchd`; plists live in `deploy/`
-- First load is manual on Eviebot (the runner's non-Aqua session can't bootstrap):
-  `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/<plist>`
-- Subsequent deploys: `launchctl kickstart -k gui/$(id -u)/<label>`
-- Deploy via GitHub Actions on push to `main`, on this repo's own Eviebot self-hosted runner (`runs-on: [self-hosted, macOS, ARM64]`).
-  Workflow: rsync → create venv → pip install → write `.env` from secrets → kickstart → **post-deploy health check**.
-- A deploy is "successful" only if the post-deploy health check against the live service passes — a zero exit from `launchctl kickstart` confirms the kick was sent, not that the service is reachable. The workflow must curl a health endpoint (or equivalent) and fail the job if it doesn't return 2xx within a bounded retry window.
-- Before choosing a launchctl label: `launchctl list | grep eviebot` to avoid collisions.
+### Fly.io (primary — public-facing app or MCP server)
+- App config lives in `fly.toml` at the repo root; one Fly app per repo (app name typically matches the repo).
+- Deploy via GitHub Actions on push to `main`, running `flyctl deploy` on a GitHub-hosted runner (no self-hosted runners). The workflow authenticates with a `FLY_API_TOKEN` GitHub Actions secret.
+- Secrets are injected with `fly secrets set` / `fly secrets import` (see Secrets below), not written as a `.env` on the host.
+- Health checks are declared in `fly.toml` and enforced by Fly during the rolling release.
+- A deploy is "successful" only if a post-deploy health check against the live app passes — `flyctl deploy` returning zero confirms the release was issued, not that the app is serving. The workflow must hit a health endpoint (or rely on Fly's release health checks) and fail the job if it doesn't return healthy within a bounded retry window.
 -->
 
 <!--
-### AWS (public-facing)
+### AWS (secondary — public-facing)
 - Account: `070840362692` (user: `eve-hwang`)
 - Region: `us-east-1` (confirm per project)
 - Credentials: named profiles only; never hardcode keys
@@ -103,7 +98,7 @@ Pick one. Uncomment the matching block and delete the others.
 - Workflows read secrets from **repository-level GitHub Actions secrets**, which are a manual mirror of 1Password. 1Password is authoritative — on any conflict, 1Password wins.
 - Commit a `.env.example` listing every required key with no values.
 - Never commit `.env` or any file containing secret values.
-- On deploy, the workflow injects secrets into the chosen target (writes `.env` on Eviebot, sets env vars on AWS, configures the Xcode build). Anything on the target is an artifact of deployment, not a source of truth — if the target is rebuilt, the next deploy recreates it.
+- On deploy, the workflow injects secrets into the chosen target (`fly secrets set` on Fly.io, env vars on AWS, the Xcode build configuration). Anything on the target is an artifact of deployment, not a source of truth — if the target is rebuilt, the next deploy recreates it.
 - Adding a new secret: add the field to the 1Password item → sync it into the repo's GitHub Actions secrets → add the key to `.env.example` → add the inject step to the deploy workflow.
 
 ---
@@ -112,27 +107,18 @@ Pick one. Uncomment the matching block and delete the others.
 *Carried in this file because Claude Code cloud sandboxes have no `~/.claude/CLAUDE.md`. These coordinates apply to every project, not just this one.*
 
 ### GitHub
-- One account: `EvieHwang` (personal). All repos, secrets, and runners live here.
-- Deployment target is a per-project choice — AWS, Eviebot, or Apple platform — driven by the workload, not by which account hosts the repo.
-- Self-hosted runners are **per repository** (a personal account can't host an org-level runner). Each Eviebot-deployed repo gets its own runner registered to it.
+- One account: `EvieHwang` (personal). All repos and secrets live here.
+- Deployment target is a per-project choice — Fly.io, AWS, or Apple platform — driven by the workload, not by which account hosts the repo.
+- CI runs on GitHub-hosted runners (no self-hosted runners). Deploys are GitHub Actions workflows on push to `main`.
 
-### AWS
+### Fly.io — primary deployment platform
+- Primary runtime for backend services and MCP servers, replacing the retired Eviebot Mac mini.
+- One Fly app per repo (app name typically matches the repo); config in `fly.toml`.
+- Deploys run through GitHub Actions via `flyctl deploy`, authenticated with a `FLY_API_TOKEN` Actions secret.
+- Secrets are set with `fly secrets`; 1Password remains the canonical source (see Secrets above).
+- `eviebot-api-mcp` is the deployed MCP server for Eviebot's tools; consult its own repo for integration details when a project needs to talk to it.
+
+### AWS — secondary deployment platform
 - Account: `070840362692` (user: `eve-hwang`)
 - Default region: `us-east-1`
-
-### Eviebot — runtime server
-- Mac mini, headless, always-on. macOS — use `launchd`, not systemd.
-- Runner user: `eviebot`. All paths under `/Users/eviebot/`.
-- Services live at `/Users/eviebot/services/<repo-name>/` with a venv at `.venv/`.
-- Use `python3.11` (Homebrew) when 3.10+ is needed; otherwise confirm `python3 --version` before assuming.
-
-#### Self-hosted runners (per repo)
-- One runner per Eviebot-deployed repo, each installed at `~/actions-runner-<repo>/`.
-- Labels: `[self-hosted, macOS, ARM64]`; workflows target it with `runs-on: [self-hosted, macOS, ARM64]`.
-- Managed via `launchd` through the runner's own script: `cd ~/actions-runner-<repo>/ && ./svc.sh start|stop|status|restart`.
-- Adding a runner to a new repo: generate a registration token for the repo, then on Eviebot `mkdir -p ~/actions-runner-<repo> && cd ~/actions-runner-<repo>`, download and extract the runner, `./config.sh --url https://github.com/EvieHwang/<repo> --token <TOKEN>`, then `./svc.sh install && ./svc.sh start`.
-
-### Gateway integration
-- Gateway repo: `eviebot-mcp-gateway`, running on port 8080.
-- To add a new MCP backend, follow the gateway repo's `CLAUDE.md` exactly. Port allocation, auth patterns (A/B), and the `gateway.py` block are defined there — read it first.
-- Check existing service labels with `launchctl list | grep eviebot` before choosing a new one.
+- Still active; used where a workload fits AWS better than Fly.io.
