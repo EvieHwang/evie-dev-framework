@@ -4,6 +4,8 @@ description: Coached retro at the end of a feature build. Produces features/[fea
 
 Run after `/build` to capture what was learned during the feature build, and to propose changes to the template, constitution, or CLAUDE.md before the lessons evaporate.
 
+**Owner-decision stops notify.** Nothing here adds a stop — this command stops only where it already says to and proceeds autonomously everywhere else. But *when* it does stop for a decision or confirmation only the owner can give, raise it through the `AskUserQuestion` tool rather than ending the turn with trailing prose: in a cloud/web/mobile session the question is what notifies the owner that the run is waiting on them. Phrase it as the real decision and keep "Other" open for a freeform reply. This changes how a stop surfaces, never whether one happens.
+
 Read in order: constitution.md, declaration.md, features/[feature-name]-[number]/declaration.md, features/[feature-name]-[number]/spec.md, and features/[feature-name]-[number]/build-deviations.md if it exists. Skim the feature branch's git log for the build phase.
 
 This is a coached conversation. Walk the user through:

@@ -4,6 +4,8 @@ description: Quick bounded change — bug, tweak, polish, or small feature that 
 
 Quick bounded change — use for bugs, tweaks, polish, or small features where the intent is clear and the work fits in a single session. No feature artifacts are produced — the PR is the documentation.
 
+**Owner-decision stops notify.** Nothing here adds a stop — this command stops only where it already says to and proceeds autonomously everywhere else. But *when* it does stop for a decision or confirmation only the owner can give (e.g. plan approval before implementing), raise it through the `AskUserQuestion` tool rather than ending the turn with trailing prose: in a cloud/web/mobile session the question is what notifies the owner that the run is waiting on them. Phrase it as the real decision and keep "Other" open for a freeform reply. This changes how a stop surfaces, never whether one happens.
+
 Before proposing the change:
 - Read constitution.md and CLAUDE.md.
 - If this work is refining output from an earlier feature, read that feature's existing artifacts in features/[name]/.

@@ -6,6 +6,8 @@ Read constitution.md, declaration.md, `features/[feature-name]-[number]/declarat
 
 `/build` assumes the spec and tests are final: they have already cleared `/spec`'s independent adversarial gate, and `/spec`'s handoff PR has been merged to `main`. Your job is to make the test suite pass without re-litigating the spec. Plan, decompose, and implement — the runtime owns the orchestration; you are not walking a hand-built DAG.
 
+**Owner-decision stops notify.** Nothing here adds a stop — `/build` runs autonomously and stops only where it already says to (a missing input, a kick-back to `/spec`, a wrong requirement). But *when* it does stop for a decision only the owner can give, raise it through the `AskUserQuestion` tool rather than ending the turn with trailing prose: in a cloud/web/mobile session the question is what notifies the owner that the run is waiting on them. Phrase it as the real decision and keep "Other" open for a freeform reply. This changes how a stop surfaces, never whether one happens.
+
 Confirm the inputs are present:
 - `spec.md` exists and `tests/` is non-empty.
 - The `## Testing` section names at least one runner and run command (and, for a polyglot repo, the test root for each).

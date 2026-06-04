@@ -12,6 +12,8 @@ It runs as a single forward pass — declaration → spec → tests → independ
 
 `/spec` stops only for decisions the owner must make (see **When to stop**). Everything else proceeds autonomously.
 
+**Owner-decision stops notify.** Nothing here adds a stop — this command stops only where it already says to and proceeds autonomously everywhere else. But *when* it does stop for a decision or confirmation only the owner can give, raise it through the `AskUserQuestion` tool rather than ending the turn with trailing prose: in a cloud/web/mobile session the question is what notifies the owner that the run is waiting on them. Phrase it as the real decision and keep "Other" open for a freeform reply. This changes how a stop surfaces, never whether one happens.
+
 ## Resuming
 
 Check which artifacts exist in `features/[feature-name]-[number]/`:
@@ -113,7 +115,7 @@ Record the outcome in an `## Adversarial gate` section at the bottom of `spec.md
 
 ### When to stop
 
-Stop and ask the user — using the exact product or scope question that needs judgment, not a list of technical options — when:
+Stop and ask the user — via the `AskUserQuestion` tool, using the exact product or scope question that needs judgment, not a list of technical options — when:
 - The gate surfaces findings to disposition (above).
 - The spec drifts in scope from the feature declaration, or the feature tensions with the project or feature declaration. Declaration tension usually means the feature is mis-scoped.
 - A risk needs an explicit acknowledgment only the owner can make.

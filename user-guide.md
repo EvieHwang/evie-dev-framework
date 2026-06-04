@@ -15,6 +15,8 @@ The framework draws one line and holds it:
 
 The one place the framework still inserts itself into execution is the **adversarial gate**: an independent, clean-context attack on the spec and tests before any code is written. That isn't process supervision — it catches blind spots the authoring pass can't see in itself, no matter how capable the model is.
 
+**How stops reach you.** Each command runs autonomously and stops only at the decisions you own (a declaration to confirm, gate findings to disposition, a plan to approve, a risk to acknowledge). When a command hits one of those stops, it raises it as an `AskUserQuestion` prompt rather than printing prose and waiting — so a cloud/web/mobile session actually notifies you that the run is parked on your input, instead of stalling silently until you check back. This governs *how* a stop surfaces, not *when* one happens: it adds no new stops, and the commands proceed without pausing everywhere they already did.
+
 ---
 
 ## The mainline
