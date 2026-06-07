@@ -49,6 +49,7 @@ If the file does not yet exist locally, create any missing parent directories fi
 FRAMEWORK_VERSION
 user-guide.md
 features/README.md
+.claude/commands/backlog.md
 .claude/commands/build.md
 .claude/commands/declaration.md
 .claude/commands/feature.md
