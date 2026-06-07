@@ -40,6 +40,8 @@ Everything else is a tool you reach for in a specific situation — not a step i
 - **`/feature`** — *feature-level.* Run it before `/spec` when a feature's scope is ambiguous and you want a coached scoping pass. It also carries the walking-skeleton coaching for a project's **first** feature. Skip it when the scope is already clear — `/spec` writes the declaration itself.
 - **`/declaration`** — *project-level.* Run it when the project's intent, Shape, or Roadmap shifts as you learn, and you want to revise `declaration.md` deliberately. `/setup` runs this as its second phase on a fresh clone, so you only invoke it on its own *later*, to update what setup first established.
 
+**`/backlog`** — a read-only conversation that kicks off the next piece of work. It reads `declaration.md`'s Roadmap, cross-references what's already under `features/`, surfaces the open backlog items, and stops for you to pick one — then talks it through until you're ready to run `/spec`. Writes nothing and changes no other part of the workflow; it's just a structured way to choose and pressure-test the next item before the pipeline starts.
+
 **`/patch`** — a small bounded change (bug fix, tweak, polish, contained feature) where the intent is clear and the work fits one session. No feature artifacts; the PR body is the documentation. Use when you know what correct looks like and the change is contained.
 
 **`/retro`** — after a build, a coached retro that closes the learning loop: it proposes changes to `constitution.md`, `CLAUDE.md`, and the skill prompts based on what the build taught.
@@ -71,6 +73,7 @@ A command writing outside its lane is how top-level intent gets corrupted, so th
 | `/build` | feature source code, `features/[name]/build-deviations.md`; corrects tests only per its contract |
 | `/retro` | `features/[name]/retro.md`; **proposes** (never auto-applies) edits to `constitution.md` / `CLAUDE.md` / skills, including `## Spec-authoring lessons` entries |
 | `/patch` | scoped code + tests for the one change |
+| `/backlog` | nothing — read-only conversation to pick the next item |
 | `/upgrade` | framework-owned files wholesale; merges `CLAUDE.md` / `constitution.md` framework sections behind per-edit approval |
 
 The rule behind the table: top-level `declaration.md` is rewritten only by `/setup` and `/declaration` (with `/spec` allowed to adjust the Roadmap, explicitly). `constitution.md` grows by append during `/spec` (risks, testing) and `/retro` (spec-authoring lessons); its principle/pattern/standard sections change deliberately — via a `/retro` proposal or `/upgrade` — not as a side effect of a feature build.

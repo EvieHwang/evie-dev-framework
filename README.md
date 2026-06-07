@@ -40,6 +40,7 @@ Open the cloned repo in Claude Code and:
 | `/spec` | Produce a feature's spec + test suite, then run an independent adversarial gate |
 | `/build` | Implement against the spec's tests until the suite passes, then open a PR |
 | `/patch` | A bounded change — bug, tweak, small feature — in one session |
+| `/backlog` | Pick the next item off the Roadmap and talk it through before `/spec` (read-only) |
 | `/retro` | Capture what was learned after a feature build |
 | `/upgrade` | Pull the latest framework files into this project |
 
