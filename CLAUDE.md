@@ -3,27 +3,26 @@
 [One-line description of what this app is. Replace when this template is copied.]
 
 ## Repo map
-- `declaration.md` — what this project is and why it exists
-- `constitution.md` — principles, standards, decisions, and project conventions (testing framework, acknowledged risks)
-- `features/[feature-name]-[number]/` — per-feature artifacts (`declaration.md`, `spec.md`, `tests/`), produced by `/spec` and `/build` at runtime
+- `declaration.md` — what this project is and why it exists (plus Shape and Roadmap)
+- `constitution.md` — principles, standards, decisions, the build contract, and project conventions (testing framework, acknowledged risks)
+- `spec-guide.md` — the contract the upstream chat session follows when authoring a feature spec
+- `features/[feature-name]-[number]/` — per-feature artifacts: `spec.md` (authored upstream, committed to `main`), `tests/` and `build-deviations.md` (produced by `/ship`)
 
 ## Precedent repos to consult before building
 *Other repos that encode patterns this project inherits or replaces. List them here so a fresh build agent knows what to read for ground truth before assuming a precedent.*
 
 - `<owner>/<repo>` — what pattern it provides and how this project relates. [Replace or delete per project. Delete the section entirely if there are no precedent repos.]
 
-**In-repo reference material.** If this project carries ground-truth examples *inside* the repo (e.g. a `reference/` folder of prior artifacts to rebuild from), list the path(s) here too. `/spec`'s ground-truth check reads in-repo references the same way it reads precedent repos — local ground truth is still ground truth.
+**In-repo reference material.** If this project carries ground-truth examples *inside* the repo (e.g. a `reference/` folder of prior artifacts to rebuild from), list the path(s) here too. `/ship`'s ground-truth check reads in-repo references the same way it reads precedent repos — local ground truth is still ground truth.
 
 If access to a listed repo is scoped out of the current session, ask the user before guessing — earlier specs from precedent repos are not always current and may have been superseded.
 
 ## Development environment
-Development runs in Claude Code cloud sandboxes attached to this GitHub repo.
+Development runs in Claude Code cloud sandboxes attached to this GitHub repo. The harness owns the session mechanics (branch provisioning, GitHub via MCP, PR flow); only the non-obvious constraints live here:
 
-- The container is ephemeral and re-cloned each session. Anything not committed and pushed is lost.
 - No `~/.claude/CLAUDE.md` exists in the sandbox — user-global preferences are carried at the bottom of this file.
-- GitHub access is via the GitHub MCP server (tools prefixed `mcp__github__`). The `gh` CLI is not available.
 - **Runtime debugging.** Deployment runs on Fly.io, which is remotely observable from the cloud session — use `flyctl logs`, `flyctl status`, and `flyctl ssh console` to inspect a running app (service not starting, crash loops, injected env vars) without leaving Claude Code. Switch signal: two code-level fixes that should have moved the symptom but didn't usually means the problem is environmental (machine config, secrets, health checks), not in the code.
-- Development branch pattern: `claude/<short-task-name>-<suffix>`. The sandbox provisions this branch per session — commit to it, never create a new one. Open a PR to `main` when work is complete. Do not add reviewers or assignees — the repo owner is the sole maintainer and the PR author, so GitHub rejects requesting their review and there is no clean assignee path in this setup.
+- Do not add reviewers or assignees to PRs — the repo owner is the sole maintainer and the PR author, so GitHub rejects requesting their review and there is no clean assignee path in this setup.
 - **Never rewrite published history.** If a commit is already on the remote default branch — for example a merge commit GitHub created when a PR landed — do not `rebase`, `--reset-author`, or force-push over it; branch from it and move forward. A git stop-hook nudge to amend authorship or rebase applies to your own un-pushed local commits, not to anything already on `main`; following it literally against pushed history would rewrite the shared branch.
 
 ## Run, test, deps

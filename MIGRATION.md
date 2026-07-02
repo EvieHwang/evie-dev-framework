@@ -1,42 +1,53 @@
-# Migration: V1 → V2 (2026-05-30)
+# Migration: V2 → V3 (2026-07-02)
+
+*(The V1 → V2 record lives in git history.)*
 
 ## The thesis
 
-V1 was built against a model that had to be forced into self-consistency and hand-walked through execution — convergence loops, stability markers, a DAG, wave sequencing, and a state file did that walking. That assumption no longer holds (Opus 4.8 + Claude Code Dynamic Workflows), so V2 keeps everything that encodes human judgment the model can't derive and hands everything that merely supervised the model's process back to the runtime.
+V2 collapsed V1's process supervision into two pipeline commands plus utilities, but it still authored specs inside Claude Code and still spelled out mechanics the harness now handles natively. Two things changed since:
 
-The single test applied to every element: it survives if it carries *intent or constraint only the owner has*; it is cut if it exists to *supervise the model's process*. Tests are the deliberate exception — the executable half of "what done means" — so V2 makes them more central, not less.
+1. **Spec authoring moved upstream.** The owner talks through a feature in a claude.ai chat with full MCP repo access — optionally with Claude Design for UI-shaped work — and commits the spec to `main` before any Claude Code session starts.
+2. **The harness absorbed the choreography.** AskUserQuestion-based stops, PR flow, branch mechanics, orchestration and parallelization, and PR-event watching are now native behavior that no longer needs to be written into every command.
 
-## What was kept
+V3 applies V2's own survival test again — *keep what carries owner intent or constraint; cut what supervises the model's process* — and inverts the center of gravity from a command pipeline to **documents plus one gate**.
 
-- **`/setup`, `/declaration`, `/feature`, `/patch`, `/retro`, `/upgrade`** — upstream intent and utility. `/feature`'s walking-skeleton coaching and Roadmap-aware start are preserved verbatim as pure judgment.
-- The **independent adversarial review**, now the final clean-context stage of `/spec` rather than a standalone command.
-- The contracts that make autonomous execution trustworthy: **tests are the source of truth, requirements are immutable, design is a recommendation**, the **deviation-logging** discipline (`build-deviations.md`), the **"a weak test is worse than no test"** stance, and **acknowledged-risk propagation** to `constitution.md`.
-- All non-derivable always-loaded content: the user-globals / Eviebot coordinates, the standards registry, the decision log, the acknowledged-risks table, the post-deploy-health-check rule, and the no-reviewers/no-assignees PR constraint.
+## The shape
 
-## What was collapsed
+Chat authors `features/<name>-<number>/spec.md` (per the new `spec-guide.md`) → `/ship` runs end to end in one session: intake checks → one upfront question batch → acceptance tests → independent adversarial gate → build to green → PR → after merge, watch the deployment to a verified healthy release → final report → end.
 
-- **`/requirements` + `/architecture` + `/adversarial` + `/tests` → `/spec`.** One forward pass produces a single `spec.md` (requirements and design written together) and an executable `tests/` suite, then runs an independent adversarial gate in clean context. The gate is a single pass, not a loop: no requirements↔architecture round-trips, no stability markers, no convergence counters, no multi-round bounce-back. It surfaces findings to the user — the only stops `/spec` makes, alongside genuine product-judgment stops — and the user fixes, acknowledges, or proceeds.
-- **`/dag` + `/next` + the wave loop → `/build`'s native planning.** `/build` now assumes a finalized, gate-cleared spec, plans and decomposes the work itself (parallel subagents / Dynamic Workflows where warranted), and iterates against the tests until the suite passes. If it hits a genuine spec problem it kicks back to `/spec` instead of editing the spec.
+## Kept
 
-## What was deleted
+- **`constitution.md`** in full, and it absorbs the build contract (tests as source of truth, `@frozen`/`@scaffolding`, immutable requirements, design-as-recommendation, deviation logging) and the walking-skeleton principle as a new `## Build contract` section and an architectural principle.
+- **The independent adversarial gate**, as a stage of `/ship`. Independence improved: spec author (chat), test/code author (`/ship`), and reviewer (clean-context subagent) are three separate contexts. The security-fix re-gate rule is kept.
+- **Acknowledged-risk propagation** and the **spec-authoring-lessons feedback loop** — now closed by `/ship`'s PR and final report instead of a separate `/retro`.
+- **`/setup`** and **`/upgrade`**, both slimmed.
 
-- Commands: `/requirements`, `/architecture`, `/adversarial`, `/tests`, `/dag`, `/next`.
-- Machinery: the `state.md` artifact and its format spec, the per-wave push-for-durability hack, the one-DAG-per-session sizing apparatus, `verify.md`'s task→test mapping, and the artifact-existence-detection that drove loop re-entry.
-- Always-loaded clutter the model now does unprompted: the `## Build flow note` in `CLAUDE.md`, the "read the constitution first" directives, and the conventional-commits convention in `constitution.md`.
+## Collapsed
 
-## Artifact changes
+- `/spec` + `/build` → `/ship`. The spec-handoff PR is gone — it existed only because spec and build ran in separate sessions.
+- `/retro` → the tail of `/ship`: the session that watched the build and deploy already holds the deviations, so it proposes the lessons itself.
+- `/backlog`, `/feature`, `/declaration` → the upstream chat conversation (which reads the Roadmap via MCP). Declaration edits are now just deliberate edits you direct.
+- `/patch` → nothing. A bounded change is what a plain session does by default.
 
-A feature folder now holds `declaration.md`, `spec.md`, `tests/`, optionally `build-deviations.md`, and optionally `retro.md`. Gone: `requirements.md`, `design.md`, `adversarial-review.md`, `verify.md`, `dag.md`, `state.md`, `spec-summary.md` (the PM summary now lives in the spec PR body).
+## Deleted
 
-## Judgment calls
+- Command files: `backlog.md`, `build.md`, `declaration.md`, `feature.md`, `patch.md`, `retro.md`, `spec.md`.
+- The **Owner-decision stops notify** boilerplate repeated in all eight V2 commands (harness-native).
+- All V1-negation language ("no wave loop, no state.md, no convergence counters") — deprogramming for machinery no current model would invent.
+- Harness-native environment mechanics from `CLAUDE.md` (MCP-vs-gh, ephemeral container, branch provisioning).
 
-- **No standalone test-refinement command.** Tests stay central, but a separate `/tests` wasn't kept: `/spec` regenerates the suite (it detects existing artifacts and re-runs the gate), and `/patch` can refine tests directly. Re-running the whole `/spec` pass to adjust tests is cheap now that there's no loop around it.
-- **`spec.md` folds requirements and design into one file.** A single capable pass writes them together; splitting them existed mainly to feed the req↔arch loop, which is gone. The behavioral-constraint discipline that kept design honest is preserved as a section within `spec.md`.
-- **The PM summary became the spec PR body** rather than a committed `spec-summary.md` artifact — the PR is already the handoff surface between the `/spec` session and the `/build` session.
-- **The adversarial gate's record lives in a section of `spec.md`**, not a separate living `adversarial-review.md` with stable IDs and re-verification — that bookkeeping only made sense for the multi-round loop.
+## New
+
+- **`spec-guide.md`** — the upstream authoring contract, written to be read by the chat session via MCP.
+- **Stage 6 deployment watch** — `/ship` follows the merge through Actions and the deploy target to *verified health*, not just green CI. Code-level failures are fixed via new PRs in the same session; environmental failures are raised with a diagnosis.
+
+## Owner-decided policies (2026-07-02)
+
+- **Gate findings:** HIGH pauses the run; MEDIUM/LOW are fixed when unambiguous or carried in the PR body — merging acknowledges them.
+- **Deploy failure:** diagnose and fix by default; environmental causes are raised, not brute-forced.
 
 ## What to watch in practice
 
-- **The single-pass spec.** The gate is the only safety net now that the req↔arch loop is gone. If specs start shipping with contradictions the gate misses, that's the signal the one-pass assumption is too aggressive for some feature shapes.
-- **`/build` planning without a DAG.** Large features used to be force-split by the one-DAG-per-session sizing check. With that gone, `/build` is trusted to decompose and parallelize on its own; watch for builds that sprawl past a session or lose the thread on big features — that's where a lightweight sizing nudge might need to come back.
-- **Gate independence.** The gate is only as good as its clean context. If it drifts toward defending or rewriting the spec instead of attacking it, the independence that justifies the whole stage is lost.
+- **Spec quality upstream.** The intake checks and the gate are the only nets under a constitution-blind spec. If `/ship`'s question batches grow large, the upstream chat isn't reading `spec-guide.md`/the constitution closely enough.
+- **One-session sprawl.** A very large feature may exceed a session. The fix is upstream: split the spec.
+- **Merge-as-acknowledgment.** Risks ride the PR body. If PR bodies go unread, risk acknowledgment silently degrades — the constitution's risk table keeps the record honest, but only if the merge decision was a real read.
