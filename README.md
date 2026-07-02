@@ -28,5 +28,6 @@ Small changes that don't warrant a spec don't need a command — open a session 
 - `declaration.md` — intent: what, why, for whom, out of scope, Platform, Shape, Roadmap.
 - `constitution.md` — accumulated judgment: standards, principles, patterns, the build contract, spec-authoring lessons, quality gates, testing wiring, decision log, acknowledged risks.
 - `spec-guide.md` — the contract the upstream chat follows when authoring a spec.
+- `chat-skill/` — the canonical source of the claude.ai `spec-author` skill, a thin wrapper that fetches and follows `spec-guide.md` via MCP (uploaded once to claude.ai; not distributed by `/upgrade`).
 
 See [`user-guide.md`](user-guide.md) for the full division of labor.
