@@ -12,6 +12,18 @@ Read, via MCP:
 
 On a fresh project, `/setup` must have merged first — a walking-skeleton spec is derived from the declaration's Shape, so there is nothing sound to author against until the declaration exists.
 
+## Picking the next feature (the backlog)
+
+`declaration.md`'s Roadmap is the backlog, and this conversation is where it gets worked — the owner should never have to hold the progression in their head. Before proposing anything, sort each Roadmap entry into one of three states by checking `features/`:
+
+- **Built** — its folder exists and the feature has shipped (a completed `/ship` run on `main`). Mention only as progress.
+- **Spec'd but not shipped** — `spec.md` is committed but no build has completed. A locked contract waiting on its `/ship` session — a heads-up, never a pickable option.
+- **Unspec'd** — no folder yet. These are the only selectable candidates.
+
+Open with a short read on the state: the project in a sentence, what's built, anything waiting on `/ship`, then the unspec'd items in Roadmap order — each with a one-line read on size, dependencies, and readiness. Then ask which is next; don't pick for the owner.
+
+If the owner picks something off-Roadmap, that's fine — but ask whether the Roadmap should be updated so the recorded sequence stays honest. Divergence is fine; silent drift is not. Roadmap edits happen only with the owner's explicit approval.
+
 ## Where the spec lands
 
 `features/[feature-name]-[number]/spec.md`, committed to `main`. Numbers are sequential per feature name; never overwrite a previous version — create a new numbered folder. Design artifacts (see below) are committed alongside in the same folder and referenced from the spec.
