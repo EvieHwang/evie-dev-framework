@@ -15,13 +15,15 @@ API design:       Microsoft REST API Guidelines
 AI integration:   OWASP Top 10 for LLMs
 Security depth:   OWASP ASVS
 
-Agents follow these without deviation unless the declaration 
-explicitly requires otherwise. Deviation must be surfaced as 
-a decision, not made silently.
+These apply where the project's platform and exposure make 
+them relevant, honored as acceptance criteria proportionate to 
+what the feature actually touches — a one-page admin tool does 
+not absorb a full accessibility sign-off. A deviation, or loading 
+a heavy cross-cutting standard onto a thin feature, is surfaced 
+as a decision, not made silently or absorbed as a hidden cost.
 
 ## Architectural principles
-- The spec is the contract. Its requirements are never modified during implementation; if a requirement is wrong, `/ship` stops and raises it to the owner rather than patching it mid-build (see `## Build contract`).
-- A project's **first feature is a walking skeleton**: the thinnest vertical slice that exercises the Shape's seams end to end, not the most valuable feature. Depth comes from feature 2 onward.
+- The spec is the contract. If a requirement turns out to be wrong, it is surfaced to the owner, not silently patched — the party trying to meet the definition of done does not get to edit it (see `## Acceptance bar`).
 - No Docker for local development unless the project has multi-service dependencies that genuinely require it.
 - All deployments run through GitHub Actions, triggered by push to `main`.
 - Prefer first-class deploy tooling (`flyctl deploy` from GitHub Actions) over SSH-based deploy steps.
@@ -29,14 +31,16 @@ a decision, not made silently.
 
 [Add app-specific principles below as they are decided.]
 
-## Build contract
-*How `/ship` treats the spec and tests during implementation. Framework-owned; applies to every feature.*
+## Acceptance bar (definition of done)
+*What `/ship` must be able to demonstrate for a feature to be done. It specifies outputs, not the path — how the build reaches them is the builder's business. Every item here is something a person or CI can actually check; an item that can't be checked doesn't belong on the bar.*
 
-- **Tests are the source of truth.** A failing test means the implementation is wrong. If, after genuine investigation, a test itself contains a clear error, correct it and record the change in the feature's `build-deviations.md`: which test, the original assertion, why it was wrong, what was corrected.
-- **`@frozen` vs. `@scaffolding`.** A test tagged `@frozen` (or untagged) is a hard contract — satisfied as written. `@scaffolding` marks an interface surface named ahead of the implementation only to make behavior testable; the surface may be refined as long as the asserted behavior holds, logged in `build-deviations.md`. This is latitude over provisional interface detail, never license to weaken a behavioral assertion.
-- **Requirements are immutable during a build.** If a requirement looks actually *wrong* — not hard, wrong — stop and raise it to the owner; the spec is edited only at their direction, and a security-relevant edit gets a clean-context re-check. Never patch a requirement silently mid-build.
-- **Design is a recommendation.** When implementation reality contradicts the spec's design, satisfy the behavioral requirement another way and log the deviation. `build-deviations.md` is the feedback channel to future spec authoring — write each entry to be legible to the next spec author, naming the authoring mistake it exposes, not just the local fix.
-- **A weak test is worse than no test; a premature test is the opposite failure.** Weak tests create false confidence; premature tests pin implementation detail and foreclose valid implementations. Both are defects, and the fix for one is never to commit the other.
+- **Behavior holds.** The spec's behavioral requirements are satisfied and covered by tests that verify them as written, and those tests are green — **every** runner in `## Testing`, not just one.
+- **The gates pass.** Everything in `## Quality gates` is met.
+- **Standards honored where they apply** (`## Standards`), proportionate to what the feature touches.
+- **The release is verified healthy** — a real probe of the running service, not merely green CI (see the architectural principles).
+- **Spec integrity preserved.** A requirement that looks *wrong* is surfaced to the owner, never silently patched. Where the build had to diverge from the spec's *design* (not its requirements) to satisfy the behavior, that divergence is reported in the PR so it can feed `## Spec-authoring lessons`.
+
+How the tests get written — in what order, against which internal surfaces, before or after the code — is not the framework's concern. The bar is that the behavior is real, checked, and green. A weak test that creates false confidence, and a premature test that pins internal shape and forecloses valid implementations, are both defects; neither is fixed by committing the other.
 
 ## Patterns in use
 - **Frontend stack:** React + TypeScript + Tailwind + shadcn/ui. Vanilla JS is acceptable only for stateless single-page tools.
@@ -47,7 +51,7 @@ a decision, not made silently.
 [Add app-specific patterns below as they are established.]
 
 ## Spec-authoring lessons
-*Recurring spec/test-authoring mistakes learned from real builds, routed here by `/ship` from `build-deviations.md` so they don't recur. Both the upstream spec author (per `spec-guide.md`) and `/ship` read this section before working. Keep each entry concrete: the mistake, and the rule that prevents it, tagged with the feature it came from.*
+*Recurring spec/test-authoring mistakes learned from real builds, surfaced by `/ship` from the design divergences it reports in the PR, so they don't recur. Both the upstream spec author (per `spec-guide.md`) and `/ship` read this section before working. Keep each entry concrete: the mistake, and the rule that prevents it, tagged with the feature it came from.*
 
 - [e.g. "Don't assert the exact JWT algorithm in a test — assert that an expired/forged token is rejected. (auth-1)"]
 
@@ -74,8 +78,8 @@ a decision, not made silently.
 [populated as significant decisions are made]
 
 ## Acknowledged risks
-*Cross-feature accumulation surface. Each adversarial-gate finding the owner acknowledges — by an explicit answer during `/ship`, or by merging a PR whose body carries it under "Risks for review" — gets one row here so the project never silently forgets that it knowingly took on risk. Severity is the unmitigated severity — an acknowledged HIGH stays HIGH. Populated by `/ship`.*
+*Cross-feature accumulation surface. Each risk-review finding the owner acknowledges — by an explicit answer during `/ship`, or by merging a PR whose body carries it under "Risks for review" — gets one row here so the project never silently forgets that it knowingly took on risk. Severity is the unmitigated severity — an acknowledged HIGH stays HIGH. Populated by `/ship`.*
 
 | Feature | Finding | Severity | Risk | Rationale | Mitigation |
 |---------|---------|----------|------|-----------|------------|
-[populated by the adversarial gate in /ship]
+[populated by the independent risk review in /ship]

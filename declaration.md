@@ -13,4 +13,4 @@
 [what this project explicitly does not do]
 
 ## Platform
-[where this runs — e.g. iOS, macOS, iPadOS, visionOS, watchOS, tvOS, web, CLI, server, cross-platform. Apple-platform projects trigger the HIG-native lens in `/spec`'s adversarial gate.]
+[where this runs — e.g. iOS, macOS, iPadOS, visionOS, watchOS, tvOS, web, CLI, server, cross-platform. An Apple platform makes native-fit — custom controls a standard platform component already solves — part of what `/ship`'s independent risk review checks.]

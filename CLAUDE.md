@@ -4,9 +4,9 @@
 
 ## Repo map
 - `declaration.md` — what this project is and why it exists (plus Shape and Roadmap)
-- `constitution.md` — principles, standards, decisions, the build contract, and project conventions (testing framework, acknowledged risks)
+- `constitution.md` — principles, standards, decisions, the acceptance bar (definition of done), and project conventions (testing framework, acknowledged risks)
 - `spec-guide.md` — the contract the upstream chat session follows when authoring a feature spec
-- `features/[feature-name]-[number]/` — per-feature artifacts: `spec.md` (authored upstream, committed to `main`), `tests/` and `build-deviations.md` (produced by `/ship`)
+- `features/[feature-name]-[number]/` — per-feature artifacts: `spec.md` (authored upstream, committed to `main`) and `tests/` (produced by `/ship`)
 
 ## Precedent repos to consult before building
 *Other repos that encode patterns this project inherits or replaces. List them here so a fresh build agent knows what to read for ground truth before assuming a precedent.*
