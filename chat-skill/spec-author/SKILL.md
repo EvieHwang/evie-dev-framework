@@ -15,14 +15,15 @@ never write test code or implementation prescriptions.
    contract for what a spec contains; follow it over this skill wherever
    they differ — plus `declaration.md` (the Roadmap is the backlog),
    `constitution.md` (standards, patterns, Spec-authoring lessons,
-   acknowledged risks, Build contract), and any precedent repos or
+   acknowledged risks, Acceptance bar), and any precedent repos or
    reference material `CLAUDE.md` names.
 3. **Pick the feature.** Propose the next unbuilt Roadmap item as the
    default; if Evie wants something else, surface the divergence and ask
    whether the Roadmap should be updated to match.
-4. **Converse at intent level** until scope is tight: value describable in
-   one sentence without "and" doing heavy lifting; a project's first
-   feature is a walking skeleton.
+4. **Converse at intent level** until scope is tight: one coherent unit of
+   value. Split into separate specs only when the parts carry independent
+   value or independent risk (per `spec-guide.md`'s sizing) — not merely
+   because the description contains an "and."
 5. **Draft the spec** per `spec-guide.md`'s shape and review it with Evie.
    For UI-shaped features, incorporate Claude Design artifacts alongside;
    skip design for backend/CLI work.

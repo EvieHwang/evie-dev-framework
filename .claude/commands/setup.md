@@ -25,12 +25,12 @@ Seed **What** from the one-liner and cover, at the level of intent (redirect imp
 2. **Why** — the problem it solves.
 3. **For whom** — who uses it and what they need.
 4. **Out of scope** — what it explicitly does not do.
-5. **Platform** — iOS / macOS / iPadOS / visionOS / watchOS / tvOS / web / CLI / server / cross-platform. Tell the user: an Apple platform activates the HIG-native lens in `/ship`'s adversarial gate, which pushes back on custom-built controls the platform already provides.
-6. **Shape** — 3–7 named components/seams, one line each. A revisable map of the parts, not an architecture; it exists so the first feature has seams to slice against.
-7. **Roadmap** — 3–7 anticipated features in rough order, each tagged with the seams it touches. Memory, not commitment — it's what the upstream spec conversation reads to pick the next item.
+5. **Platform** — iOS / macOS / iPadOS / visionOS / watchOS / tvOS / web / CLI / server / cross-platform. Tell the user: an Apple platform makes native-fit part of `/ship`'s independent risk review, which pushes back on custom-built controls the platform already provides.
+6. **Shape** — as many named components/seams as are actually real, one line each (a handful is typical; don't pad to a number). A revisable map of the parts, not an architecture; it exists so features have seams to slice against.
+7. **Roadmap** — the anticipated features in rough order, each tagged with the seams it touches. Memory, not commitment — it's what the upstream spec conversation reads to pick the next item. List what you genuinely foresee; an honest short list beats an invented long one, and it is not a decomposition the project is obliged to follow.
 
 Shape and Roadmap are the genuine forks — take them one at a time; the rest at whatever cadence the conversation supports. Write `declaration.md` with sections `## What`, `## Why`, `## For whom`, `## Out of scope`, `## Platform`, `## Shape (revisable)`, `## Roadmap (revisable)`. Present it for review; revise until it says what the user meant. Commit.
 
 ## Exit
 
-Push the branch (`git push -u origin <current-branch>`) and ensure exactly one setup PR is open against `main` (the harness may have auto-created one on first push — update it rather than opening a second; no reviewers or assignees). Tell the user: merge it, then author the first spec per `spec-guide.md` (a walking skeleton) and run `/ship` in a fresh session.
+Push the branch (`git push -u origin <current-branch>`) and ensure exactly one setup PR is open against `main` (the harness may have auto-created one on first push — update it rather than opening a second; no reviewers or assignees). Tell the user: merge it, then author the first spec per `spec-guide.md` and run `/ship` in a fresh session.

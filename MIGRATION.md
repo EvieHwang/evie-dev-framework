@@ -1,53 +1,41 @@
-# Migration: V2 → V3 (2026-07-02)
+# Migration: V3 → V4 (2026-07-13)
 
-*(The V1 → V2 record lives in git history.)*
+*(Earlier migration records live in git history.)*
 
 ## The thesis
 
-V2 collapsed V1's process supervision into two pipeline commands plus utilities, but it still authored specs inside Claude Code and still spelled out mechanics the harness now handles natively. Two things changed since:
+V3 collapsed the command pipeline into documents plus `/ship`, but `/ship` still spelled out **how to build** — a test-first ordering, `@frozen`/`@scaffolding` tagging, a walking-skeleton mandate, coverage maps, per-feature deviation files, and a rigid three-context separation. That middle is exactly the part the model is being actively made better at, so prescribing it is a depreciating bet: every prescribed step is an implicit claim the builder won't do it well unless told, and each model release makes more of those claims false.
 
-1. **Spec authoring moved upstream.** The owner talks through a feature in a claude.ai chat with full MCP repo access — optionally with Claude Design for UI-shaped work — and commits the spec to `main` before any Claude Code session starts.
-2. **The harness absorbed the choreography.** AskUserQuestion-based stops, PR flow, branch mechanics, orchestration and parallelization, and PR-event watching are now native behavior that no longer needs to be written into every command.
+V4 draws one line. The framework specifies the **edges** (constitution, spec, deployment contract) and the **definition of done** (a verifiable acceptance bar), and prescribes nothing about the path between them. The distinction it enforces everywhere:
 
-V3 applies V2's own survival test again — *keep what carries owner intent or constraint; cut what supervises the model's process* — and inverts the center of gravity from a command pipeline to **documents plus one gate**.
+- **Acceptance** — a verifiable output you're entitled to demand of a black box (tests green, gates pass, release verified healthy). Kept, and made the center of gravity.
+- **Procedure** — dictating the internals (write tests first, tag them, build a skeleton, log deviations in this format). Dropped.
 
-## The shape
-
-Chat authors `features/<name>-<number>/spec.md` (per the new `spec-guide.md`) → `/ship` runs end to end in one session: intake checks → one upfront question batch → acceptance tests → independent adversarial gate → build to green → PR → after merge, watch the deployment to a verified healthy release → final report → end.
+A useful side effect: process now right-sizes itself. Because `/ship` is asked for outputs proportional to the feature rather than a fixed sequence of steps, a trivial change produces little and a risky one produces more — without an explicit tier system.
 
 ## Kept
 
-- **`constitution.md`** in full, and it absorbs the build contract (tests as source of truth, `@frozen`/`@scaffolding`, immutable requirements, design-as-recommendation, deviation logging) and the walking-skeleton principle as a new `## Build contract` section and an architectural principle.
-- **The independent adversarial gate**, as a stage of `/ship`. Independence improved: spec author (chat), test/code author (`/ship`), and reviewer (clean-context subagent) are three separate contexts. The security-fix re-gate rule is kept.
-- **Acknowledged-risk propagation** and the **spec-authoring-lessons feedback loop** — now closed by `/ship`'s PR and final report instead of a separate `/retro`.
-- **`/setup`** and **`/upgrade`**, both slimmed.
+- **`constitution.md`** in full as the accumulated judgment and the home of the definition of done.
+- **The independent risk review** — the one check a builder can't perform on itself. Now expressed as an acceptance guarantee ("surface an independent review of what was built") and **sized to the feature's stakes**, not run as fixed ceremony on everything. The security-fix re-check is kept.
+- **Deployment-to-verified-health**, the acknowledged-risk propagation, and the spec-authoring-lessons feedback loop.
+- **`/setup`**, **`/ship`**, **`/upgrade`** as the three commands.
 
-## Collapsed
+## Changed
 
-- `/spec` + `/build` → `/ship`. The spec-handoff PR is gone — it existed only because spec and build ran in separate sessions.
-- `/retro` → the tail of `/ship`: the session that watched the build and deploy already holds the deviations, so it proposes the lessons itself.
-- `/backlog`, `/feature`, `/declaration` → the upstream chat conversation (which reads the Roadmap via MCP). Declaration edits are now just deliberate edits you direct.
-- `/patch` → nothing. A bounded change is what a plain session does by default.
+- **`## Build contract` → `## Acceptance bar (definition of done)`** in the constitution. Reframed from "how `/ship` treats the spec during the build" to "what `/ship` must be able to demonstrate for a feature to be done" — verifiable outputs only.
+- **`/ship`** rewritten from six prescribed stages to intake → questions-once → build-to-the-bar → independent risk review → PR → watch-to-healthy. The build stage no longer prescribes ordering, tagging, or decomposition.
+- **`spec-guide.md`** shrunk. The no-"and" split rule became a judgment call (split only on independent value or risk); the walking-skeleton mandate and the embedded Claude Design prompt are gone.
+- **Standards** are now applied proportionate to what a feature touches, rather than defaulted on wholesale.
 
-## Deleted
+## Dropped
 
-- Command files: `backlog.md`, `build.md`, `declaration.md`, `feature.md`, `patch.md`, `retro.md`, `spec.md`.
-- The **Owner-decision stops notify** boilerplate repeated in all eight V2 commands (harness-native).
-- All V1-negation language ("no wave loop, no state.md, no convergence counters") — deprogramming for machinery no current model would invent.
-- Harness-native environment mechanics from `CLAUDE.md` (MCP-vs-gh, ephemeral container, branch provisioning).
-
-## New
-
-- **`spec-guide.md`** — the upstream authoring contract, written to be read by the chat session via MCP.
-- **Stage 6 deployment watch** — `/ship` follows the merge through Actions and the deploy target to *verified health*, not just green CI. Code-level failures are fixed via new PRs in the same session; environmental failures are raised with a diagnosis.
-
-## Owner-decided policies (2026-07-02)
-
-- **Gate findings:** HIGH pauses the run; MEDIUM/LOW are fixed when unambiguous or carried in the PR body — merging acknowledges them.
-- **Deploy failure:** diagnose and fix by default; environmental causes are raised, not brute-forced.
+- The **walking-skeleton mandate** — a skeleton is now a legitimate *choice* for a project with real seams, never a requirement.
+- **`@frozen`/`@scaffolding` test tagging**, the **test-first ordering** rule, and the **coverage map** appended to `spec.md`.
+- **`build-deviations.md`** and the **`## Adversarial gate`** record — divergences and risks are reported in the PR, which was always the real channel.
+- The **"preserve three independent contexts" doctrine** — independence is retained only where it earns its cost (the risk review), not as a structural rule over the whole flow.
 
 ## What to watch in practice
 
-- **Spec quality upstream.** The intake checks and the gate are the only nets under a constitution-blind spec. If `/ship`'s question batches grow large, the upstream chat isn't reading `spec-guide.md`/the constitution closely enough.
-- **One-session sprawl.** A very large feature may exceed a session. The fix is upstream: split the spec.
-- **Merge-as-acknowledgment.** Risks ride the PR body. If PR bodies go unread, risk acknowledgment silently degrades — the constitution's risk table keeps the record honest, but only if the merge decision was a real read.
+- **Acceptance that nobody checks.** The redesign only holds if every acceptance item maps to a real check — CI, a health probe, an inspectable PR section. An unenforced acceptance item is just procedure you stopped running; drop it or wire it to a check.
+- **Risk review sizing.** "Proportional to stakes" is a judgment. If it quietly collapses to "never," the one net under a constitution-blind spec is gone — watch that security-relevant features still draw a real pass.
+- **Spec quality upstream.** Intake and the risk review remain the nets. Large `/ship` question batches mean the upstream chat isn't reading `spec-guide.md`/the constitution closely enough.
